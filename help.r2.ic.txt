@@ -1,0 +1,53 @@
+﻿r2.ic                                       	pacote: pacotes_lem									 R Documentation
+
+	
+
+Descrição
+	
+	Esta função serve para comparar os valores de indíces de integração morfológica total (r2) entre dois grupos. 
+	Para isso ela calcula a partir de dados morfométricos matrizes de correlação para cada grupo, e a partir destas matrizes os valores de r2 empíricos.
+	Além disso, a função calcula através de uma reamostragem das observações por booststrap os intervalos de confiança de 95% para estes valores de r2.
+
+	
+
+Uso
+
+	r2.ic(grupo1, grupo2,reamostragem)
+
+Argumentos
+
+	grupo 1 	um data frame ou matriz contendo os valores das variáveis do primeiro grupo que serão usadas para calcular a matriz de correlação e r2
+
+	grupo 2		um data frame ou matriz contendo os valores das variáveis do segundo grupo que serão usadas para calcular a matriz de correlação e r2
+
+	reamostragem 	o número de reamostragens a serem feitos no bootstrap, o padrão é 1000
+
+Detalhes
+	
+	A função utiliza os dados brutos de medidas morfométricas e os transforma em matrizes de correlação, posteriormente calcula o valor de r2, que é igual a soma dos quadrados da matriz triangular excluindo-se a diagonal dividida pelo número de valores que foram usados na soma.
+	Este valor corresponde a um índice que indica o quão integrada é esta matriz, isto é se as correlações são elevadas para a maior parte dos caracteres os valores de r2 serão elevados, indicando que a os caractres morfológicos são bastante integrados.
+ 
+
+Valores
+	Retorna uma lista com os valores observados de r2 (r2.obs), os valores de r2 calculados em cada uma da reamostragem (dist1 e dist2) e os quantis de 2.5% e 95% das distribuições destas reamostragens (IC)
+
+	A função também retorna um gráfico com as curvas de densidade, os valores observados e o intervalo de confiança.
+
+Nota
+
+	Esta função funcionará apenas com planilhas de dados nas quais as observações correspondem às linhas do data frame pois serão as linhas que serão amostradas no bootstrap.
+	Esta função embora tenha sido desenvolvida para uso em dados morfométricos, pode ser usada em qualquer tipo de dados, desde que cada linha corresponda a uma observação e as colunas aos valores dos quais as matrizes de correlação serão calculadas
+
+Autor(es)
+
+	Ana Paula APrígio Assis
+
+Exemplo
+	## baixe o arquivo chamado "exemplo_r.txt", este arquivo contém dados de 4 medidas morfométricas (colunas de 1 a 4) para quatro espécies distintas (espécies A,B,C,D- coluna 5)
+	
+	exemplo.r<- read.table("exemplo_r.txt", header= TRUE, sep=",", dec=".", as.is=TRUE)
+	r2.exemplo<- r2.ic(exemplo.r[exemplo.r$ESPECIE== "A",1:4], exemplo.r[exemplo.r$ESPECIE=="B",1:4]) # exemplo comparando os indices de integração total das espécies A e B
+	r2.exemplo<- r2.ic(exemplo.r[exemplo.r$ESPECIE== "B",1:4], exemplo.r[exemplo.r$ESPECIE=="C",1:4]) # exemplo comparando os indices de integração total das espécies B e C
+
+
+							Lem_pacotes (2012)
