@@ -1,9 +1,9 @@
-remove.size <- function (P)
+remove.size <- function (G)
   {
-    size.eigen.vector <- svd(P)$u[,1]
-    size.eigen.value <- svd(P)$d[1]
+    size.eigen.vector <- svd(G)$u[,1]
+    size.eigen.value <- svd(G)$d[1]
     size.factor <- size.eigen.vector*sqrt(size.eigen.value)
-    Residual <- P - size.factor %*% t(size.factor)
+    Residual <- G - size.factor %*% t(size.factor)
     return (Residual)
   }
 
