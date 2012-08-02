@@ -1,4 +1,3 @@
-## Funções para Extração de Dados Brutos (Input/)
 remove.size <- function (P)
   {
     size.eigen.vector <- svd(P)$u[,1]
@@ -509,4 +508,25 @@ plot.pap.2 <- function (output, modhip, modwho = "", now = "")
     text (c.mean.r2, c.sd.r2, labels = dists, pos = 4, cex = 0.9)
     text (c.mean.r2, c.sd.r2, labels = modwho, pos = 3, cex = 0.9)
     axis (4, las = 2)
+  }
+
+rep.nova = function (ID, data.matrix)
+  {
+    ### Lessels, C. M., & Boag, P. T. (1987).
+    ### Unrepeatable repeatabilities: a common mistake.
+    ### The Auk, 2(January), 116–121.
+    chars = ncol (data.matrix)
+    model.gen = function (vec) return (lm (vec ~ ID))
+    models.list = apply (data.matrix, 2, model.gen)
+    models.list = lapply (models.list, anova)
+    rep.itself = function (summ)
+      {
+        msq = summ$'Mean Sq' ## 1 entre, 2 dentro
+        s2a = (msq[1] - msq[2])/2
+        out = s2a / (s2a + msq[2])
+        return (out)
+      }
+    out = sapply (models.list, rep.itself)
+    names (out) = colnames (data.matrix)
+    return (out)
   }
