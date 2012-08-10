@@ -66,14 +66,15 @@ hh.mod = function (mat, hip, nsk = 10000, divergent = FALSE)
           })
   }
 
-plot.mod.evol = function (evo.out)
+plot.mod.evol = function (evo.out, new.dev = TRUE)
   {
     require (MASS)
     with (evo.out,
           {
             n.hip = nrow (mod)
             n.sk = nrow (dist)
-            # par (mfrow = c(2,3))
+            if (new.dev)
+              par (mfrow = c(2,3))
             out = array (0, dim (mod))
             for (j in 1:6)
               {
