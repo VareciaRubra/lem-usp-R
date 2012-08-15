@@ -151,3 +151,53 @@ hh.GP.mod = function (G, P, hip, nsk = 10000)
             return (out)
           })
   }
+
+hh.ms.av = function (mat, mean.vec, nsk = 10000)
+  {
+    with (load.of.functions,
+          {
+            n.char = dim (P) [1]
+            beta.mat = array (rnorm (n.char * nsk), c(n.char, nsk))
+            beta.mat = apply (beta.mat, 2, normalize)
+            ### standardizing G
+            pc1 = eigen (mat)$vectors[,1]
+            mat = mat / mean.vec %o% mean.vec
+            iso.vec = normalize (rep(1, times = n.char))
+            null.dist = abs (t (iso.vec) %*% beta.mat)
+            null.dist = sort (null.dist)
+            crit.value = null.dist [round (0.95 * nsk)]
+            cat ('critical value: ', crit.value, '\n')
+            ### standardizing betas
+            beta.mat = beta.mat / mean.vec
+            parm.dist = array (0, c(nsk, 8))
+            hh.wrap = function (hh.func) return (apply (beta.mat, 2, hh.func, C = mat))
+            parm.dist [,1:6] = sapply (hansen.houle, hh.wrap)
+            parm.dist[,7] = as.numeric (parm.dist[,5] > crit.value)
+            parm.dist[,8] = as.numeric (parm.dist[,6] > crit.value)
+            parm.dist = cbind (parm.dist, null.dist)
+            colnames (parm.dist) = c('resp','evol','cond.evol', 'auto',
+                       'flex','const','flex.n', 'const.n', 'null.dist')
+            parm.av = colMeans (parm.dist)
+            parm.av[7:8] = parm.av[7:8] * nsk
+            hh.wrap.pc1 = function (hh.func) return (hh.func (beta = pc1, C = mat))
+            maximum = sapply (hansen.houle, hh.wrap.pc1)
+            integration = c (r2 (mat), pc1.percent (mat))
+            names (integration) = c ('r2', 'pc1%')
+            parm.av = c (integration, parm.av)
+            return (list ('dist' = parm.dist, 'mean' = parm.av, 'max.val' = maximum, 'mean.vec' = mean.vec,
+                          'mat' = mat))
+          })
+  }
+
+hh.ms.mod = function (mat, mean.vec, hip, nsk = 10000)
+  {
+    with (load.of.functions,
+          {
+            out = hh.ms.av (mat, mean.vec, nsk)
+            hh.wrap2 = function (hh.func) return (apply (hip, 2, hh.func, C = out$mat))
+            hip = apply (hip, 2, normalize)
+            hip = hip / mean.vec
+            out$mod = sapply (hansen.houle, hh.wrap2)
+            return (out)
+          })
+  }
