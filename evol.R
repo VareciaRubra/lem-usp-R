@@ -156,7 +156,7 @@ hh.ms.av = function (mat, mean.vec, nsk = 10000)
   {
     with (load.of.functions,
           {
-            n.char = dim (P) [1]
+            n.char = dim (mat) [1]
             beta.mat = array (rnorm (n.char * nsk), c(n.char, nsk))
             beta.mat = apply (beta.mat, 2, normalize)
             ### standardizing G
