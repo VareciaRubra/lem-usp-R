@@ -97,3 +97,15 @@ plot.mod.evol = function (evo.out, new.dev = TRUE)
             return (out)
           })
   }
+
+plot.group.evol = function (evol.list)
+  {
+    plot.single = function (evol.list, which)
+      {
+        n.obj = length (evol.list)
+        plot.ss = function (single)
+          {
+            
+          }
+      }
+  }
