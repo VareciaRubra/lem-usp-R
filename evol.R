@@ -103,7 +103,6 @@ plot.group.evol = function (evol.list)
     plot.single = function (evol.list, which)
       {
         n.obj = length (evol.list)
-
         plot.ss = function (single)
           {
             
