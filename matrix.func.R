@@ -354,7 +354,7 @@ alpha.rep <- function (cor, tam)
     return((varvec - varerro)/varvec)
   }
 
-krz <- function (vcv1, vcv2, d = 19)
+krz.comp <- function (vcv1, vcv2, d = 19)
   {
     func <- function (x) return (eigen(x)$vectors[,1:d])
     A <- func (vcv1)
