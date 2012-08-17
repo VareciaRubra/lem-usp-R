@@ -103,7 +103,16 @@ plot.group.evol = function (evol.list)
     plot.single = function (evol.list, which)
       {
         n.obj = length (evol.list)
-        plot.ss = function (single)
+        extract.dist = function (element, which) return (element$dist[,which])
+        to.plot = sapply (evol.list, extract.dist, which)
+        colnames (to.plot) = names (evol.list)
+        plot.range = range (to.plot)
+        boxplot (to.plot, ylim = plot.range, cex = 0.2)
+        extract.mod = function (element, which) return (element$mod[,which])
+        extract.mod.names = function (element) return (rownames (element$mod))
+        mod.values = lapply (evol.list, extract.mod, which)
+        mod.names =  lapply (evol.list, extract.mod.names)
+        for (i in 1:n.obj)
           {
             
           }
