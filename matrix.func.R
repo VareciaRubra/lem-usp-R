@@ -169,44 +169,52 @@ bootstrap.rep.G <- function (data, sex, age, ind, nb = 1000, corr = FALSE)
       return (out)
   }
 
-rmvnorm2 <- function (n, mean = rep(0, nrow(sigma)), sigma = diag(length(mean)),
-    method = c("eigen", "svd", "chol"))
-{
-    #if (!isSymmetric(sigma, tol = sqrt(.Machine$double.eps))) {
-    #    stop("sigma must be a symmetric matrix")
-    #}
-    if (length(mean) != nrow(sigma)) {
-        stop("mean and sigma have non-conforming size")
+rmvnorm2 <- function (n, theta = rep(0, nrow(sigma)),
+                      sigma = diag(length(theta)),
+                      method = c("eigen", "svd", "chol")) {
+  # Calculates random deviates from a normal multivariate distribution
+  #
+  # Args:
+  #   n: number os deviates
+  #   theta: vetor of means
+  #   sigma: covariance matrix
+  #   method: generation method
+  #
+  # Return:
+  #   Vector of deviates
+  if (length(theta) != nrow(sigma)) {
+    stop("theta and sigma have non-conforming size")
+  }
+  sigma.aux <- sigma
+  dimnames(sigma.aux) <- NULL
+  if (!isTRUE(all.equal(sigma.aux, t(sigma.aux)))) {
+    warning("sigma is numerically not symmetric")
+  }
+  method <- match.arg(method) #  what is this?
+  if (method == "eigen") {
+    sigma.eigen <- eigen(sigma, symmetric = TRUE)
+    if (!all(sigma.eigen$values >=
+             -sqrt(.Machine$double.eps) * abs(sigma.eigen$values[1]))) {
+      warning("sigma is numerically not positive definite")
     }
-    sigma1 <- sigma
-    dimnames(sigma1) <- NULL
-    if (!isTRUE(all.equal(sigma1, t(sigma1)))) {
-        warning("sigma is numerically not symmetric")
+    random.deviates <- sigma.eigen$vectors %*%
+                       diag(sqrt(sigma.eigen$values),
+                            length(sigma.eigen$values)) %*%
+                       t(sigma.eigen$vectors)
+  }
+  else if (method == "svd") {
+    sigma.svd <- svd(sigma)
+    if (!all(sigma.svd$d >= -sqrt(.Machine$double.eps) * abs(sigma.svd$d[1]))) {
+      warning("sigma is numerically not positive definite")
     }
-    method <- match.arg(method)
-    if (method == "eigen") {
-        ev <- eigen(sigma, symmetric = TRUE)
-        if (!all(ev$values >= -sqrt(.Machine$double.eps) * abs(ev$values[1]))) {
-            warning("sigma is numerically not positive definite")
-        }
-        retval <- ev$vectors %*% diag(sqrt(ev$values), length(ev$values)) %*%
-            t(ev$vectors)
-    }
-    else if (method == "svd") {
-        sigsvd <- svd(sigma)
-        if (!all(sigsvd$d >= -sqrt(.Machine$double.eps) * abs(sigsvd$d[1]))) {
-            warning("sigma is numerically not positive definite")
-        }
-        retval <- t(sigsvd$v %*% (t(sigsvd$u) * sqrt(sigsvd$d)))
-    }
-    else if (method == "chol") {
-        retval <- chol(sigma, pivot = TRUE)
-        o <- order(attr(retval, "pivot"))
-        retval <- retval[, o]
-    }
-    retval <- matrix(rnorm(n * ncol(sigma)), nrow = n) %*% retval
-    retval <- sweep(retval, 2, mean, "+")
-    retval
+    random.deviates <- t(sigma.svd$v %*% (t(sigma.svd$u) * sqrt(sigma.svd$d)))
+  }
+  else if (method == "chol") {
+    sigma.chol <- chol(sigma)
+    random.deviates <- matrix(rnorm(n * ncol(sigma)), nrow = n) %*% sigma.chol
+  }
+  random.deviates <- sweep(random.deviates, 2, theta, "+")
+  return(random.deviates)
 }
 
 monte.carlo.rep <- function (matrix, ind, nit = 100)
