@@ -66,7 +66,8 @@ MultiRsMantel <- function (matrix.list, matrix.comp.func = RandomSkewers,
           correlations [i, i] <- repeat.vector [i]
         for (j in i:matrix.n)
           {
-            comparing.now <- matrix.comp.func (matrix.list [[i]], matrix.list [[j]], iterations)
+            comparing.now <- matrix.comp.func (matrix.list [[i]],
+                                               matrix.list [[j]], iterations)
             correlations [i, j] <- comparing.now [1]
             probabilities [i, j] <- comparing.now [2]
             if (!is.null (repeat.vector))
