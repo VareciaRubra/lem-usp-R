@@ -42,7 +42,7 @@ mod.main <- function (cor, modhip, nit = 1000)
 
 MultiRsMantel <- function (matrix.list, matrix.comp.func = RandomSkewers,
                            repeat.vector = NULL, iterations = 1000)
-  # Performs multiple comparisons between a set of covariance of correlation matrices
+  # Performs multiple comparisons between a set of covariance of correlation matrices.
   #
   # Args:
   #  matrix.list: a list of covariance or correlation matrices
