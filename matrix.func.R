@@ -40,40 +40,44 @@ mod.main <- function (cor, modhip, nit = 1000)
     return (output)
   }
 
-multi.rs.mantel <- function (mlist, func = random.skewers, repvec = NULL, nit = 1000)
+MultiRsMantel <- function (matrix.list, matrix.comp.func = RandomSkewers,
+                           repeat.vector = NULL, iterations = 1000)
+  # Performs multiple comparisons between a set of covariance of correlation matrices
+  #
+  # Args:
+  #  matrix.list: a list of covariance or correlation matrices
+  #  matrix.comp.func: function to use for comparison
+  #  repeat.vector: vector of matrix repeatabities
+  #  iterations: number of random skewers of matrix permutations passed to matrix.comp.func
+  #
+  # Return:
+  #  a list with two matrices containing $\Gamma$-values or average random
+  #  skewers correlation and probabilities according to permutation test.
+  #  if repeat.vector was also passed, values above the diagonal on the correlation matrix
+  #  will contain corrected correlation values.
   {
-    num <- length (mlist)
-    matrices <- names (mlist)
-    R <- prob <- array (0, c(num,num))
-    for (N in 1:num)
+    matrix.n <- length (matrix.list)
+    matrix.names <- names (matrix.list)
+    probabilities <- array (0, c(matrix.n, matrix.n))
+    correlations <- probabilities
+    for (i in 1:(matrix.n - 1))
       {
-        for (M in 1:N)
+        if (!is.null (repeat.vector))
+          correlations [i, i] <- repeat.vector [i]
+        for (j in i:matrix.n)
           {
-            if (N != M)
-              {
-                tmp <- func (mlist[[N]], mlist[[M]], nit)
-                R[N,M] <- tmp[1]; prob[N,M] <- tmp[2]
-              }
+            comparing.now <- matrix.comp.func (matrix.list [[i]], matrix.list [[j]], iterations)
+            correlations [i, j] <- comparing.now [1]
+            probabilities [i, j] <- comparing.now [2]
+            if (!is.null (repeat.vector))
+              correlations [j, i] <- correlations [i, j] /
+                sqrt (repeat.vector [i] * repeat.vector [j])
           }
       }
-    if (length(repvec) != 0)
-      {
-        diag(R) <- repvec
-        for (N in 1:num)
-          {
-            for (M in 1:N)
-              {
-                if (N != M)
-                  {
-                    R[M,N] <- R[N,M] / sqrt (R[N,N] * R[M,M])
-                  }
-              }
-          }
-      }
-    colnames (R) <- rownames (R) <- matrices
-    dimnames (prob) <- dimnames (R)
-    output <- list (R, prob)
-    names (output) <- rownames(tmp)
+    rownames (correlations) <- matrix.names
+    colnames (correlations) <- matrix.names
+    dimnames (probabilities) <- dimnames (correlations)
+    output <- list ('correlations' = correlations, 'probabilities' = probabilities)
     return (output)
   }
 
