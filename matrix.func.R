@@ -62,10 +62,9 @@ MultiRsMantel <- function (matrix.list, matrix.comp.func = RandomSkewers,
     correlations <- probabilities
     for (i in 1:(matrix.n - 1))
       {
-        if (!is.null (repeat.vector))
-          correlations [i, i] <- repeat.vector [i]
-        for (j in i:matrix.n)
+        for (j in (i+1):matrix.n)
           {
+            cat (i, ' ', j, '\n')
             comparing.now <- matrix.comp.func (matrix.list [[i]],
                                                matrix.list [[j]], iterations)
             correlations [i, j] <- comparing.now [1]
@@ -74,6 +73,13 @@ MultiRsMantel <- function (matrix.list, matrix.comp.func = RandomSkewers,
               correlations [j, i] <- correlations [i, j] /
                 sqrt (repeat.vector [i] * repeat.vector [j])
           }
+      }
+    if (!is.null (repeat.vector))
+      {
+        repeat.mat <- sqrt (repeat.vector %o% repeat.vector)
+        corrected <- correlations / repeat.mat
+        correlations <- t (corrected) + correlations
+        diag (correlations) <- repeat.vector
       }
     rownames (correlations) <- matrix.names
     colnames (correlations) <- matrix.names
