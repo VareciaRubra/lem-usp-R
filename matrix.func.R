@@ -13,6 +13,31 @@ RemoveSize <- function (cov.matrix){
   return (cov.matrix.size.removed)
 }
 
+MonteCarloR2 <- function (corr.matrix, sample.size, iterations = 1000)
+  # Computes a distribution of magnitudes of integration (r2)
+  # for a given correlation matrix.
+  #
+  # Args:
+  #   corr.matrix: a square symmetric correlation matrix
+  #   sample.size: number of individuals to sample
+  #   iterations: number of populations sampled
+  # Return:
+  #   a vector with iterations + 1 entries; the first entry corresponds
+  #   to the actual r2 value calculated from the original matrix. The
+  #   remaining entries are values calculated from the resampling procedure.
+  {
+    R2 <- function (matrix)
+      return (mean (matrix [lower.tri (matrix)]^2))
+    n.traits <- dim (corr.matrix) [1]
+    populations <- list ()
+    for (i in 1:iterations)
+      populations [[i]] <- rmvnorm2 (sample.size, sigma = corr.matrix, method = 'chol')
+    it.matrices <- lapply (populations, cor)
+    it.r2 <- sapply (it.matrices, R2)
+    r2 <- c (R2 (corr.matrix), it.r2)
+    return (r2)
+  }
+
 mod.main <- function (cor, modhip, nit = 1000)
   {
     no.hip <- dim (modhip) [2]
