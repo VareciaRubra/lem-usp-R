@@ -398,156 +398,50 @@ KzrCor <- function (cov.matrix.1, cov.matrix.2, ret.dim = 19){
   return (SL)
 }
 
-TestModularitySRD <- function (cov.matrix, modularity.hipot, nit = 1000, neuro.total = FALSE) {
-  # Tests modularity hipotesis using cov.matrix matrix and trait groupings using SRD
+PlotSRD <- function (output, matrix.label = ""){
+  # Plots the output of the SRD function in standard format
   #
   # Args:
-  #   cov.matrix: Correlation matrix
-  #   modularity.hipot: Matrix of hipotesis.
-  #                     Each line represents a trait and each column a module.
-  #                     if modularity.hipot[i,j] == 1, trait i is in module j.
-  #   neuro.total: pira do pato, não sei... TODO
-  # Return:
-  #   TODO: boa pergunta
-  no.hip <- dim (modularity.hipot) [2]
-  traits <- dim (modularity.hipot) [1]
-  if (neuro.total)
-    add <- 2
+  #     output: the output from the SRD funtion
+  #     matrix.label: string with the names of the matrices that were compared in the SRD function
+  # Result:
+  #     pretty plot
+  layout (array (c(1,1,2,2),c(2,2)))
+  par (mar = c(4.0, 4.0, 4.9, 0.4))
+  mean.r2 <- output$out[,1]
+  low.r2 <- output$out[,2]
+  up.r2 <- output$out[,3]
+  c.mean.r2 <- output$out[,5]
+  c.sd.r2 <- output$out[,6]
+  if (is.null (rownames (output$out)))
+    dists <- 1:length (mean.r2)
   else
-    add <- 0
-  m.hip.array <- array (0, c(traits, traits, no.hip+add))
-  for (i in 1:no.hip){
-    m.hip.array[,,i] <- modularity.hipot[,i] %*% t(modularity.hipot[,i])
-    diag (m.hip.array[,,i]) <- 1
-    m.hip.array[,,i] <- m.hip.array[,,i] * sqrt (outer (diag(cov.matrix), diag(cov.matrix)))
+    dists <- rownames (output$out)
+  ### plot scores
+  ###                b    l    t    r
+  plot (mean.r2, type = "p", lty = 2, pch = 17,
+        ylab = "", xlab = "", xaxt = "n", ylim = c(-1,1))
+  for (i in 1:length (mean.r2))
+  {
+    abline (v = i, lty = 1, col = rgb (0.8,0.8,0.8))
   }
-  if (neuro.total){
-    m.hip.array[,,no.hip+1] <-
-      apply(!(!(apply (m.hip.array[,,7:8],c(1,2),sum))),2,as.double) ### neuroface
-    m.hip.array[,,no.hip+2] <-
-      apply(!(!(apply (m.hip.array[,,1:6],c(1,2),sum))),2,as.double) ### total
-  }
-  output <- list()
-  for (N in 1:(no.hip+add)){
-    tmp <- SRD (cov.matrix, m.hip.array[,,N], nsk = nit)
-    output[[N]] <- tmp
-  }
-  names(output) <- colnames (modularity.hipot)
-  if (neuro.total){
-    names (output)[no.hip+(1:2)] <- c("neuroface","total")
-  }
-  return (output)
+  arrows (x0 = 1:length (mean.r2),
+          y0 = low.r2, y1 = up.r2,
+          angle = 90, length = 0.05, code = 3)
+  abline (h = mean (mean.r2), lty = 3)
+  axis (3, 1:length (mean.r2), dists, las = 2, cex.axis = 0.9)
+  mtext (side = 2, at = mean (mean.r2), text = round (mean (mean.r2), 2), las = 2)
+  ### plot av sd
+  ###                b    l    t    r
+  par (mar = c(4.0, 0.0, 4.9, 4.6))
+  pc.pch <- output$model$code + 17
+  plot (c.sd.r2 ~ c.mean.r2, pch = pc.pch, xlab = "", ylab = "",
+        yaxt = "n", main = matrix.label)
+  abline (v = 0, lty = 2)
+  abline (h = 0, lty = 2)
+  text (c.mean.r2, c.sd.r2, labels = dists, pos = 4, cex = 0.9)
+  axis (4, las = 2)
 }
-
-plot.pap.mod <- function (output, modhip, modwho = "", now = "", plotmat = FALSE)
-  {
-    if (plotmat == TRUE)
-      {
-###     layout
-        layout (array (c(rep (1, times = 16), 4,
-                         rep (3, times = 24), rep (2, times = 41)),
-                       c(41,2)))
-        par (mar = c(0.2, 5.1, 4.1, 2.1))
-      }
-    else
-      {
-        layout (array (c(1,1,2,2),c(2,2)))
-        par (mar = c(4.0, 4.0, 4.9, 0.4))
-      }
-    mean.r2 <- output$out[,1]
-    low.r2 <- output$out[,2]
-    up.r2 <- output$out[,3]
-    c.mean.r2 <- output$out[,5]
-    c.sd.r2 <- output$out[,6]
-    if (is.null (rownames (output$out)))
-      dists <- 1:length (mean.r2)
-    else
-      dists <- rownames (output$out)
-    mod.cex <- ifelse (modhip == 1, 2, 1)
-### plot scores
-###                b    l    t    r
-    plot (mean.r2, type = "p", lty = 2, pch = 17, cex = mod.cex,
-          ylab = "", xlab = "", xaxt = "n", ylim = c(-1,1))
-    for (i in 1:length (mean.r2))
-      {
-        abline (v = i, lty = 1, col = rgb (0.8,0.8,0.8))
-      }
-    arrows (x0 = 1:length (mean.r2),
-            y0 = low.r2, y1 = up.r2,
-            angle = 90, length = 0.05, code = 3)
-    abline (h = mean (mean.r2), lty = 3)
-    axis (3, 1:length (mean.r2), dists, las = 2, cex.axis = 0.9)
-    mtext (side = 2, at = mean (mean.r2), text = round (mean (mean.r2), 2), las = 2)
-### plot av sd
-###                b    l    t    r
-    par (mar = c(4.0, 0.0, 4.9, 4.6))
-    pc.pch <- output$model$code + 17
-    plot (c.sd.r2 ~ c.mean.r2, pch = pc.pch, cex = mod.cex, xlab = "", ylab = "",
-          yaxt = "n", main = now)
-    abline (v = 0, lty = 2)
-    abline (h = 0, lty = 2)
-    text (c.mean.r2, c.sd.r2, labels = dists, pos = 4, cex = 0.9)
-    text (c.mean.r2, c.sd.r2, labels = modwho, pos = 1, cex = 0.9)
-    axis (4, las = 2)
-    if (plotmat == TRUE)
-      {
-### matriz
-###                                                     b    l    t    r
-        par (xaxt = "n", yaxt = "n", cex = 1, mar = c(3.3, 3.4, 0.2, 1.4))
-        color2D.matplot (output$cormat,c(-1,1),c(-1,1),c(-1,1), xlab = "", ylab = "")
-        par (las = 2, xaxt = "s", yaxt = "s", cex = 0.5)
-        axis (side = 1, 1:length (dists), dists)
-        axis (side = 2, (1:length (dists))[length (dists):1], dists)
-### barra
-        .seq <- array (seq (from = (-1), to = 1, by = 0.1),c (1,21))
-###                                                     b    l    t    r
-        par (xaxt = "n", yaxt = "n", cex = 1, mar = c(0.2, 3.4, 0.2, 1.4))
-        color2D.matplot (.seq, c(-1,1),c(-1,1),c(-1,1), xlab = "", ylab = "")
-        text (x = 0.5:20.5, y = 0.5, seq (from = (-1), to = 1, by = 0.1), cex = 0.4, col = rgb (21:0,21:0,21:0, maxColorValue = 21))
-        par (xaxt = "s", yaxt = "s")
-        return (0)
-      }
-  }
-
-plot.pap.2 <- function (output, modhip, modwho = "", now = "")
-  {
-    par (mar = c(4.0, 4.0, 4.9, 0.4))
-    mean.r2 <- output$out[,1]
-    low.r2 <- output$out[,2]
-    up.r2 <- output$out[,3]
-    c.mean.r2 <- output$out[,5]
-    c.sd.r2 <- output$out[,6]
-    if (is.null (rownames (output$out)))
-      dists <- 1:length (mean.r2)
-    else
-      dists <- rownames (output$out)
-    mod.cex <- ifelse (modhip == 1, 2, 1)
-### plot scores
-###                b    l    t    r
-    plot (mean.r2, type = "p", lty = 2, pch = 20, cex = mod.cex,
-          ylab = "", xlab = "", xaxt = "n", ylim = c(-1,1))
-    for (i in 1:length (mean.r2))
-      {
-        abline (v = i, lty = 1, col = rgb (0.8,0.8,0.8))
-      }
-    arrows (x0 = 1:length (mean.r2),
-            y0 = low.r2, y1 = up.r2,
-            angle = 90, length = 0.05, code = 3)
-    abline (h = mean (mean.r2), lty = 3)
-    axis (3, 1:length (mean.r2), dists, las = 2, cex.axis = 0.9)
-    mtext (side = 2, at = 0.8, text = round (mean (mean.r2), 2), las = 2)
-### plot av sd
-###                b    l    t    r
-    par (mar = c(4.0, 0.0, 4.9, 4.6))
-    pc.pch <- output$model$code + 20
-    plot (c.sd.r2 ~ c.mean.r2, pch = pc.pch, cex = mod.cex, xlab = "", ylab = "",
-          yaxt = "n", main = now)
-    abline (v = 0, lty = 2)
-    abline (h = 0, lty = 2)
-    text (c.mean.r2, c.sd.r2, labels = dists, pos = 4, cex = 0.9)
-    text (c.mean.r2, c.sd.r2, labels = modwho, pos = 3, cex = 0.9)
-    axis (4, las = 2)
-  }
 
 CalcRepetability = function (ID, ind.data){
   # Calculates Repetabilities acording to:
