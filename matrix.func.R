@@ -84,105 +84,6 @@ MultiRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers, repeat.v
   return (output)
 }
 
-measure.rep <- function (data1, data2, taille = 30) ## talvez eu devesse ajustar cada modelo
-  {
-    ind <- dim (data1) [1]
-    traits <- dim (data1) [2]
-    sel <- sample (1:ind, taille)
-    subset1 <- data1 [sel,]
-    subset2 <- data2 [sel,]
-    fac <- c (rownames (subset1), rownames (subset2))
-    fac <- factor (fac, levels = unique (fac))
-    maindata <- rbind (subset1, subset2)
-    reps <- c ()
-    for (N in 1:traits)
-      {
-        msq <- anova (lm (maindata[,N]~fac))[,3]
-        reps[N] <- msq[1] / sum(msq)
-      }
-    names (reps) <-  dimnames (data1) [[2]]
-    output <- list ("Individuals" = levels(fac),"Repetabilities" = reps)
-    return (output)
-  }
-
-adjust.sex.age <- function (data, sex, age, show.lm = FALSE)
-  {
-    ind <- dim(data)[1];traits <- dim(data)[2]
-    arr <- array(0,c(ind,traits))
-    for (N in 1:traits)
-      arr[,N] <- data[,N]
-    if (length(unique(sex)) == 2)
-      {
-        sex <- factor(sex, levels = unique(sex))
-        put <- lm (arr ~ age * sex)
-      }
-    else
-      put <- lm (arr ~ age)
-    out <- residuals (put)
-    dimnames (out) <- dimnames (data)
-    if (show.lm == TRUE)
-      return (list("Residuals" = out, "Models" = put))
-    else
-      return (out)
-  }
-
-BootstrapRep <- function (ind.data, nb = 100){
-  # Calculates the repetability of the covariance matrix of the suplied data
-  # via bootstrap ressampling
-  #
-  # Args:
-  #     ind.data: original individual data
-  #     nb = number of resamples
-  # Results:
-  #     returns the mean repetability
-  n.ind <-  dim (ind.data) [1]
-  original.cov.matrix <- var (ind.data)
-  v.rep <- c()
-  for (N in 1:nb){
-    sampled.data <- sample (1:n.ind, n.ind, TRUE)
-    sampled.data.cov.matrix <- var (ind.data[sampled.data,])
-    v.rep [N] <- RandomSkewers (original.cov.matrix, sampled.data.cov.matrix, 1000) [1]
-  }
-  out <- mean (v.rep)
-  return (out)
-}
-
-BootstrapRepG <- function (ind.data, sex, age, ind, nb = 1000, corr = FALSE){
-  # Calculates the repetability of the additive covariance matrix of the suplied data
-  # via bootstrap ressampling
-  #
-  # Args:
-  #     ind.data:
-  # TODD: Não entendi essa merda...
-  n.ind <- dim (ind.data) [1]
-  or.res <- adjust.sex.age (ind.data, sex, age)
-  or.vcv <- var (or.res)
-  v.rep <- c()
-  if (corr){
-    or.cor <- cor (or.res)
-    c.rep <- c()
-  }
-  for (N in 1:nb){
-    strap <- sample (1:n.ind, ind, TRUE)
-    strap.res <- adjust.sex.age (ind.data[strap,],sex[strap],age[strap])
-    strap.vcv <- var (strap.res)
-    v.rep [N] <- RandomSkewers (or.vcv, strap.vcv, 1) [1]
-    if (corr){
-      strap.cor <- cor (strap.res)
-      c.rep [N] <- MantelCor (or.cor, strap.cor, 1) [1]
-    }
-  }
-  out <- mean (v.rep)
-  if (corr){
-    put <- mean (c.rep)
-    output <- c(out,put)
-    names (output) <- c("VCV", "Corr")
-    return (output)
-  }
-  else
-    return (out)
-}
-
 rmvNorm2 <- function (n, theta = rep(0, nrow(sigma)),
                       sigma = diag(length(theta)),
                       method = c("eigen", "svd", "chol")) {
@@ -230,29 +131,6 @@ rmvNorm2 <- function (n, theta = rep(0, nrow(sigma)),
   random.deviates <- sweep(random.deviates, 2, theta, "+")
   return(random.deviates)
 }
-
-monte.carlo.rep <- function (matrix, ind, nit = 100)
-  {
-    if (sum(diag(matrix)) == dim (matrix) [1])
-      {
-        Func <- MantelCor
-        Type <- cor
-      }
-    else
-      {
-        Func <- RandomSkewers
-        Type <- var
-      }
-    R <- c()
-    for (N in 1:nit)
-      {
-        rand.samp <- rmvNorm2 (ind, rep(0, times = dim (matrix)[1]),
-                              sigma = matrix, method = "chol")
-        rand.matrix <- Type (rand.samp)
-        R[N] <- Func (matrix, rand.matrix, 1000)[1]
-      }
-    return (mean(R))
-  }
 
 Norm = function(x){return(sqrt(sum(x*x)))}
 
@@ -371,41 +249,6 @@ SRD <- function (cov.matrix.1, cov.matrix.2, nsk = 1000){
                 "cormat" = cor (t(r2s))))
 }
 
-AlphaRep <- function (cor.matrix, tam) {
-  # Calculates the matrix repetability using the equation in Cheverud 1996
-  # Quantitative genetic analysis of cranial morphology in the cotton-top
-  # (Saguinus oedipus) and saddle-back (S. fuscicollis) tamarins. Journal of Evolutionary Biology 9, 5-42.
-  #
-  # Args:
-  #     cor.matrix: correlation matrix
-  #     tam: sample size?
-  # Result:
-  #     matrix repetability
-  vec <- cor.matrix[lower.tri(cor.matrix)]
-  mvec <- mean(vec)
-  varerro <- (1 - (mvec^2))/(tam-2)
-  vec2 <- vec^2
-  Ex2 <- mean (vec2)
-  varvec <- Ex2 - (mean(vec)^2)
-  return((varvec - varerro)/varvec)
-}
-
-KzrCor <- function (cov.matrix.1, cov.matrix.2, ret.dim = 19){
-  # Calculates the Kzranowski correlation between matrices
-  #
-  # Args:
-  #     cov.matrix.(1,2): covariance being compared
-  #     ret.dim: number of retained dimensions in the comparison
-  # Return:
-  #     Kzranowski correlation
-  func <- function (x) return (eigen(x)$vectors[,1:d])
-  A <- func (cov.matrix.1)
-  B <- func (cov.matrix.2)
-  S <- t(A) %*% B %*% t(B) %*% A
-  SL <- sum (eigen(S)$values) / d
-  return (SL)
-}
-
 PlotSRD <- function (output, matrix.label = ""){
   # Plots the output of the SRD function in standard format
   #
@@ -451,7 +294,23 @@ PlotSRD <- function (output, matrix.label = ""){
   axis (4, las = 2)
 }
 
-CalcRepetability = function (ID, ind.data){
+KzrCor <- function (cov.matrix.1, cov.matrix.2, ret.dim = 19){
+  # Calculates the Kzranowski correlation between matrices
+  #
+  # Args:
+  #     cov.matrix.(1,2): covariance being compared
+  #     ret.dim: number of retained dimensions in the comparison
+  # Return:
+  #     Kzranowski correlation
+  func <- function (x) return (eigen(x)$vectors[,1:d])
+  A <- func (cov.matrix.1)
+  B <- func (cov.matrix.2)
+  S <- t(A) %*% B %*% t(B) %*% A
+  SL <- sum (eigen(S)$values) / d
+  return (SL)
+}
+
+CalcRepetability <- function (ID, ind.data){
   # Calculates Repetabilities acording to:
   #    Lessels, C. M., & Boag, P. T. (1987).
   #    Unrepeatable repeatabilities: a common mistake.
@@ -473,3 +332,151 @@ CalcRepetability = function (ID, ind.data){
   names (out) = colnames (ind.data)
   return (out)
 }
+
+AlphaRep <- function (cor.matrix, tam) {
+  # Calculates the matrix repetability using the equation in Cheverud 1996
+  # Quantitative genetic analysis of cranial morphology in the cotton-top
+  # (Saguinus oedipus) and saddle-back (S. fuscicollis) tamarins. Journal of Evolutionary Biology 9, 5-42.
+  #
+  # Args:
+  #     cor.matrix: correlation matrix
+  #     tam: sample size?
+  # Result:
+  #     matrix repetability
+  vec <- cor.matrix[lower.tri(cor.matrix)]
+  mvec <- mean(vec)
+  varerro <- (1 - (mvec^2))/(tam-2)
+  vec2 <- vec^2
+  Ex2 <- mean (vec2)
+  varvec <- Ex2 - (mean(vec)^2)
+  return((varvec - varerro)/varvec)
+}
+
+BootstrapRep <- function (ind.data, nb = 100){
+  # Calculates the repetability of the covariance matrix of the suplied data
+  # via bootstrap ressampling
+  #
+  # Args:
+  #     ind.data: original individual data
+  #     nb = number of resamples
+  # Results:
+  #     returns the mean repetability
+  n.ind <-  dim (ind.data) [1]
+  original.cov.matrix <- var (ind.data)
+  v.rep <- c()
+  for (N in 1:nb){
+    sampled.data <- sample (1:n.ind, n.ind, TRUE)
+    sampled.data.cov.matrix <- var (ind.data[sampled.data,])
+    v.rep [N] <- RandomSkewers (original.cov.matrix, sampled.data.cov.matrix, 1000) [1]
+  }
+  out <- mean (v.rep)
+  return (out)
+}
+
+BootstrapRepG <- function (ind.data, sex, age, ind, nb = 1000, corr = FALSE){
+  # Calculates the repetability of the additive covariance matrix of the suplied data
+  # via bootstrap ressampling
+  #
+  # Args:
+  #     ind.data:
+  # TODD: Não entendi essa merda...
+  n.ind <- dim (ind.data) [1]
+  or.res <- adjust.sex.age (ind.data, sex, age)
+  or.vcv <- var (or.res)
+  v.rep <- c()
+  if (corr){
+    or.cor <- cor (or.res)
+    c.rep <- c()
+  }
+  for (N in 1:nb){
+    strap <- sample (1:n.ind, ind, TRUE)
+    strap.res <- adjust.sex.age (ind.data[strap,],sex[strap],age[strap])
+    strap.vcv <- var (strap.res)
+    v.rep [N] <- RandomSkewers (or.vcv, strap.vcv, 1) [1]
+    if (corr){
+      strap.cor <- cor (strap.res)
+      c.rep [N] <- MantelCor (or.cor, strap.cor, 1) [1]
+    }
+  }
+  out <- mean (v.rep)
+  if (corr){
+    put <- mean (c.rep)
+    output <- c(out,put)
+    names (output) <- c("VCV", "Corr")
+    return (output)
+  }
+  else
+    return (out)
+}
+
+measure.rep <- function (data1, data2, taille = 30) ## talvez eu devesse ajustar cada modelo
+  {
+    ind <- dim (data1) [1]
+    traits <- dim (data1) [2]
+    sel <- sample (1:ind, taille)
+    subset1 <- data1 [sel,]
+    subset2 <- data2 [sel,]
+    fac <- c (rownames (subset1), rownames (subset2))
+    fac <- factor (fac, levels = unique (fac))
+    maindata <- rbind (subset1, subset2)
+    reps <- c ()
+    for (N in 1:traits)
+      {
+        msq <- anova (lm (maindata[,N]~fac))[,3]
+        reps[N] <- msq[1] / sum(msq)
+      }
+    names (reps) <-  dimnames (data1) [[2]]
+    output <- list ("Individuals" = levels(fac),"Repetabilities" = reps)
+    return (output)
+  }
+
+MonteCarloRep <- function (x.matrix, ind, nit = 100){
+  # Calculates x.matrix repetability using parametric sampling
+  #
+  # Args:
+  #     x.matrix: covariance or correlation matrix. 
+  #               if x.matrix is a correlation matrix will use MantelCor, 
+  #               else, will use RandomSkewers
+  #     ind: number of indivuals on each sample
+  #     nit: number of samples
+  # Results:
+  #     mean correlation of sample covariance matrices with original input x.matrix
+  if (sum(diag(x.matrix)) == dim (x.matrix) [1]){
+    Func <- MantelCor
+    Type <- cor
+  }
+  else{
+    Func <- RandomSkewers
+    Type <- var
+  }
+  R <- c()
+  for (N in 1:nit){
+    rand.samp <- rmvNorm2 (ind, rep(0, times = dim (x.matrix)[1]),
+                           sigma = x.matrix, method = "chol")
+    rand.matrix <- Type (rand.samp)
+    R[N] <- Func (x.matrix, rand.matrix, 1000)[1]
+  }
+  return (mean(R))
+}
+
+adjust.sex.age <- function (data, sex, age, show.lm = FALSE)
+  {
+    ind <- dim(data)[1];traits <- dim(data)[2]
+    arr <- array(0,c(ind,traits))
+    for (N in 1:traits)
+      arr[,N] <- data[,N]
+    if (length(unique(sex)) == 2)
+      {
+        sex <- factor(sex, levels = unique(sex))
+        put <- lm (arr ~ age * sex)
+      }
+    else
+      put <- lm (arr ~ age)
+    out <- residuals (put)
+    dimnames (out) <- dimnames (data)
+    if (show.lm == TRUE)
+      return (list("Residuals" = out, "Models" = put))
+    else
+      return (out)
+  }
+
