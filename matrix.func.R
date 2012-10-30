@@ -1,3 +1,6 @@
+Norm = function(x){return(sqrt(sum(x*x)))}
+Normalize = function(x){return(x/Norm(x))}
+
 RemoveSize <- function (cov.matrix){
   # Removes first principal component effect in cov.matrix.
   #
@@ -131,10 +134,6 @@ rmvNorm2 <- function (n, theta = rep(0, nrow(sigma)),
   random.deviates <- sweep(random.deviates, 2, theta, "+")
   return(random.deviates)
 }
-
-Norm = function(x){return(sqrt(sum(x*x)))}
-
-Normalize = function(x){return(x/Norm(x))}
 
 RandomSkewers <- function (cov.matrix.1, cov.matrix.2, nsk = 10000){
   # Calculates covariance matrix correlation via random skewers
@@ -379,7 +378,7 @@ BootstrapRepG <- function (ind.data, sex, age, ind, nb = 1000, corr = FALSE){
   #
   # Args:
   #     ind.data:
-  # TODD: Não entendi essa merda...
+  # TODO: Não entendi essa merda...
   n.ind <- dim (ind.data) [1]
   or.res <- adjust.sex.age (ind.data, sex, age)
   or.vcv <- var (or.res)
@@ -409,27 +408,6 @@ BootstrapRepG <- function (ind.data, sex, age, ind, nb = 1000, corr = FALSE){
     return (out)
 }
 
-measure.rep <- function (data1, data2, taille = 30) ## talvez eu devesse ajustar cada modelo
-  {
-    ind <- dim (data1) [1]
-    traits <- dim (data1) [2]
-    sel <- sample (1:ind, taille)
-    subset1 <- data1 [sel,]
-    subset2 <- data2 [sel,]
-    fac <- c (rownames (subset1), rownames (subset2))
-    fac <- factor (fac, levels = unique (fac))
-    maindata <- rbind (subset1, subset2)
-    reps <- c ()
-    for (N in 1:traits)
-      {
-        msq <- anova (lm (maindata[,N]~fac))[,3]
-        reps[N] <- msq[1] / sum(msq)
-      }
-    names (reps) <-  dimnames (data1) [[2]]
-    output <- list ("Individuals" = levels(fac),"Repetabilities" = reps)
-    return (output)
-  }
-
 MonteCarloRep <- function (x.matrix, ind, nit = 100){
   # Calculates x.matrix repetability using parametric sampling
   #
@@ -458,6 +436,27 @@ MonteCarloRep <- function (x.matrix, ind, nit = 100){
   }
   return (mean(R))
 }
+
+measure.rep <- function (data1, data2, taille = 30) ## talvez eu devesse ajustar cada modelo
+  {
+    ind <- dim (data1) [1]
+    traits <- dim (data1) [2]
+    sel <- sample (1:ind, taille)
+    subset1 <- data1 [sel,]
+    subset2 <- data2 [sel,]
+    fac <- c (rownames (subset1), rownames (subset2))
+    fac <- factor (fac, levels = unique (fac))
+    maindata <- rbind (subset1, subset2)
+    reps <- c ()
+    for (N in 1:traits)
+      {
+        msq <- anova (lm (maindata[,N]~fac))[,3]
+        reps[N] <- msq[1] / sum(msq)
+      }
+    names (reps) <-  dimnames (data1) [[2]]
+    output <- list ("Individuals" = levels(fac),"Repetabilities" = reps)
+    return (output)
+  }
 
 adjust.sex.age <- function (data, sex, age, show.lm = FALSE)
   {
