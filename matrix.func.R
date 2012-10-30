@@ -375,15 +375,21 @@ alpha.rep <- function (cor, tam)
     return((varvec - varerro)/varvec)
   }
 
-krz.comp <- function (vcv1, vcv2, d = 19)
-  {
-    func <- function (x) return (eigen(x)$vectors[,1:d])
-    A <- func (vcv1)
-    B <- func (vcv2)
-    S <- t(A) %*% B %*% t(B) %*% A
-    SL <- sum (eigen(S)$values) / d
-    return (SL)
-  }
+KzrCor <- function (cov.matrix.1, cov.matrix.2, ret.dim = 19){
+  # Calculates the Kzranowski correlation between matrices
+  #
+  # Args:
+  #     cov.matrix.(1,2): covariance being compared
+  #     ret.dim: number of retained dimensions in the comparison
+  # Return:
+  #     Kzranowski correlation
+  func <- function (x) return (eigen(x)$vectors[,1:d])
+  A <- func (cov.matrix.1)
+  B <- func (cov.matrix.2)
+  S <- t(A) %*% B %*% t(B) %*% A
+  SL <- sum (eigen(S)$values) / d
+  return (SL)
+}
 
 mod.pap <- function (vcv, modhip, nit = 1000, neuro.total = FALSE)
   {
