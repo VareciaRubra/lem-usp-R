@@ -130,7 +130,7 @@ BootstrapRep <- function (ind.data, nb = 100){
   # Calculates the repetabilitie of the covariance matrix of the suplied data
   # via bootstrap ressampling
   #
-  # Args: 
+  # Args:
   #     ind.data: original individual data
   #     nb = number of resamples
   # Results:
@@ -147,40 +147,41 @@ BootstrapRep <- function (ind.data, nb = 100){
   return (out)
 }
 
-bootstrap.rep.G <- function (data, sex, age, ind, nb = 1000, corr = FALSE)
-  {
-    IND <- dim (data) [1]
-    or.res <- adjust.sex.age (data, sex, age)
-    or.vcv <- var (or.res)
-    v.rep <- c()
-    if (corr)
-      {
-        or.cor <- cor (or.res)
-        c.rep <- c()
-      }
-    for (N in 1:nb)
-      {
-        strap <- sample (1:IND, ind, TRUE)
-        strap.res <- adjust.sex.age (data[strap,],sex[strap],age[strap])
-        strap.vcv <- var (strap.res)
-        v.rep [N] <- RandomSkewers (or.vcv, strap.vcv, 1) [1]
-        if (corr)
-          {
-            strap.cor <- cor (strap.res)
-            c.rep [N] <- MantelCor (or.cor, strap.cor, 1) [1]
-          }
-      }
-    out <- mean (v.rep)
-    if (corr)
-      {
-        put <- mean (c.rep)
-        output <- c(out,put)
-        names (output) <- c("VCV", "Corr")
-        return (output)
-      }
-    else
-      return (out)
+BootstrapRepG <- function (ind.data, sex, age, ind, nb = 1000, corr = FALSE){
+  # Calculates the repetabilitie of the additive covariance matrix of the suplied data
+  # via bootstrap ressampling
+  #
+  # Args:
+  #     ind.data:
+  # TODD: Não entendi essa merda...
+  n.ind <- dim (ind.data) [1]
+  or.res <- adjust.sex.age (ind.data, sex, age)
+  or.vcv <- var (or.res)
+  v.rep <- c()
+  if (corr){
+    or.cor <- cor (or.res)
+    c.rep <- c()
   }
+  for (N in 1:nb){
+    strap <- sample (1:n.ind, ind, TRUE)
+    strap.res <- adjust.sex.age (ind.data[strap,],sex[strap],age[strap])
+    strap.vcv <- var (strap.res)
+    v.rep [N] <- RandomSkewers (or.vcv, strap.vcv, 1) [1]
+    if (corr){
+      strap.cor <- cor (strap.res)
+      c.rep [N] <- MantelCor (or.cor, strap.cor, 1) [1]
+    }
+  }
+  out <- mean (v.rep)
+  if (corr){
+    put <- mean (c.rep)
+    output <- c(out,put)
+    names (output) <- c("VCV", "Corr")
+    return (output)
+  }
+  else
+    return (out)
+}
 
 rmvNorm2 <- function (n, theta = rep(0, nrow(sigma)),
                       sigma = diag(length(theta)),
@@ -549,13 +550,10 @@ CalcRepetability = function (ID, ind.data){
   #     ind.data: individual measurments
   # Result:
   #     vector of repetabilities
-  chars = ncol (ind.data)
-  model.gen = function (vec) return (lm (vec ~ ID))
-  models.list = apply (ind.data, 2, model.gen)
+  models.list = apply (ind.data, 2, function (vec){return (lm (vec ~ ID))})
   models.list = lapply (models.list, anova)
-  rep.itself = function (summ)
-  {
-    msq = summ$'Mean Sq' ## 1 entre, 2 dentro
+  rep.itself = function (lm.model){
+    msq = lm.model$'Mean Sq' ## 1 entre, 2 dentro
     s2a = (msq[1] - msq[2])/2
     out = s2a / (s2a + msq[2])
     return (out)
