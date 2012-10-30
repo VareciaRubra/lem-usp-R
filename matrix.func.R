@@ -372,42 +372,6 @@ BootstrapRep <- function (ind.data, nb = 100){
   return (out)
 }
 
-BootstrapRepG <- function (ind.data, sex, age, ind, nb = 1000, corr = FALSE){
-  # Calculates the repetability of the additive covariance matrix of the suplied data
-  # via bootstrap ressampling
-  #
-  # Args:
-  #     ind.data:
-  # TODO: Não entendi essa merda...
-  n.ind <- dim (ind.data) [1]
-  or.res <- adjust.sex.age (ind.data, sex, age)
-  or.vcv <- var (or.res)
-  v.rep <- c()
-  if (corr){
-    or.cor <- cor (or.res)
-    c.rep <- c()
-  }
-  for (N in 1:nb){
-    strap <- sample (1:n.ind, ind, TRUE)
-    strap.res <- adjust.sex.age (ind.data[strap,],sex[strap],age[strap])
-    strap.vcv <- var (strap.res)
-    v.rep [N] <- RandomSkewers (or.vcv, strap.vcv, 1) [1]
-    if (corr){
-      strap.cor <- cor (strap.res)
-      c.rep [N] <- MantelCor (or.cor, strap.cor, 1) [1]
-    }
-  }
-  out <- mean (v.rep)
-  if (corr){
-    put <- mean (c.rep)
-    output <- c(out,put)
-    names (output) <- c("VCV", "Corr")
-    return (output)
-  }
-  else
-    return (out)
-}
-
 MonteCarloRep <- function (x.matrix, ind, nit = 100){
   # Calculates x.matrix repetability using parametric sampling
   #
@@ -436,46 +400,3 @@ MonteCarloRep <- function (x.matrix, ind, nit = 100){
   }
   return (mean(R))
 }
-
-measure.rep <- function (data1, data2, taille = 30) ## talvez eu devesse ajustar cada modelo
-  {
-    ind <- dim (data1) [1]
-    traits <- dim (data1) [2]
-    sel <- sample (1:ind, taille)
-    subset1 <- data1 [sel,]
-    subset2 <- data2 [sel,]
-    fac <- c (rownames (subset1), rownames (subset2))
-    fac <- factor (fac, levels = unique (fac))
-    maindata <- rbind (subset1, subset2)
-    reps <- c ()
-    for (N in 1:traits)
-      {
-        msq <- anova (lm (maindata[,N]~fac))[,3]
-        reps[N] <- msq[1] / sum(msq)
-      }
-    names (reps) <-  dimnames (data1) [[2]]
-    output <- list ("Individuals" = levels(fac),"Repetabilities" = reps)
-    return (output)
-  }
-
-adjust.sex.age <- function (data, sex, age, show.lm = FALSE)
-  {
-    ind <- dim(data)[1];traits <- dim(data)[2]
-    arr <- array(0,c(ind,traits))
-    for (N in 1:traits)
-      arr[,N] <- data[,N]
-    if (length(unique(sex)) == 2)
-      {
-        sex <- factor(sex, levels = unique(sex))
-        put <- lm (arr ~ age * sex)
-      }
-    else
-      put <- lm (arr ~ age)
-    out <- residuals (put)
-    dimnames (out) <- dimnames (data)
-    if (show.lm == TRUE)
-      return (list("Residuals" = out, "Models" = put))
-    else
-      return (out)
-  }
-
