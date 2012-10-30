@@ -398,41 +398,46 @@ KzrCor <- function (cov.matrix.1, cov.matrix.2, ret.dim = 19){
   return (SL)
 }
 
-mod.pap <- function (vcv, modhip, nit = 1000, neuro.total = FALSE)
-  {
-    no.hip <- dim (modhip) [2]
-    traits <- dim (modhip) [1]
-    if (neuro.total)
-      add <- 2
-    else
-      add <- 0
-    m.hip.array <- array (0, c(traits, traits, no.hip+add))
-    for (i in 1:no.hip)
-      {
-        m.hip.array[,,i] <- modhip[,i] %*% t(modhip[,i])
-        diag (m.hip.array[,,i]) <- 1
-        m.hip.array[,,i] <- m.hip.array[,,i] * sqrt (outer (diag(vcv), diag(vcv)))
-      }
-    if (neuro.total)
-      {
-        m.hip.array[,,no.hip+1] <-
-          apply(!(!(apply (m.hip.array[,,7:8],c(1,2),sum))),2,as.double) ### neuroface
-        m.hip.array[,,no.hip+2] <-
-          apply(!(!(apply (m.hip.array[,,1:6],c(1,2),sum))),2,as.double) ### total
-      }
-    output <- list()
-    for (N in 1:(no.hip+add))
-      {
-        tmp <- papyrus (vcv, m.hip.array[,,N], nsk = nit)
-        output[[N]] <- tmp
-      }
-    names(output) <- colnames (modhip)
-    if (neuro.total)
-      {
-        names (output)[no.hip+(1:2)] <- c("neuroface","total")
-      }
-    return (output)
+TestModularitySRD <- function (cov.matrix, modularity.hipot, nit = 1000, neuro.total = FALSE) {
+  # Tests modularity hipotesis using cov.matrix matrix and trait groupings using SRD
+  #
+  # Args:
+  #   cov.matrix: Correlation matrix
+  #   modularity.hipot: Matrix of hipotesis.
+  #                     Each line represents a trait and each column a module.
+  #                     if modularity.hipot[i,j] == 1, trait i is in module j.
+  #   neuro.total: pira do pato, não sei... TODO
+  # Return:
+  #   TODO: boa pergunta
+  no.hip <- dim (modularity.hipot) [2]
+  traits <- dim (modularity.hipot) [1]
+  if (neuro.total)
+    add <- 2
+  else
+    add <- 0
+  m.hip.array <- array (0, c(traits, traits, no.hip+add))
+  for (i in 1:no.hip){
+    m.hip.array[,,i] <- modularity.hipot[,i] %*% t(modularity.hipot[,i])
+    diag (m.hip.array[,,i]) <- 1
+    m.hip.array[,,i] <- m.hip.array[,,i] * sqrt (outer (diag(cov.matrix), diag(cov.matrix)))
   }
+  if (neuro.total){
+    m.hip.array[,,no.hip+1] <-
+      apply(!(!(apply (m.hip.array[,,7:8],c(1,2),sum))),2,as.double) ### neuroface
+    m.hip.array[,,no.hip+2] <-
+      apply(!(!(apply (m.hip.array[,,1:6],c(1,2),sum))),2,as.double) ### total
+  }
+  output <- list()
+  for (N in 1:(no.hip+add)){
+    tmp <- SRD (cov.matrix, m.hip.array[,,N], nsk = nit)
+    output[[N]] <- tmp
+  }
+  names(output) <- colnames (modularity.hipot)
+  if (neuro.total){
+    names (output)[no.hip+(1:2)] <- c("neuroface","total")
+  }
+  return (output)
+}
 
 plot.pap.mod <- function (output, modhip, modwho = "", now = "", plotmat = FALSE)
   {
