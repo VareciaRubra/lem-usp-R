@@ -309,8 +309,8 @@ KzrCor <- function (cov.matrix.1, cov.matrix.2, ret.dim = 19){
   return (SL)
 }
 
-CalcRepetability <- function (ID, ind.data){
-  # Calculates Repetabilities acording to:
+CalcRepeatability <- function (ID, ind.data){
+  # Calculates Repeatabilities acording to:
   #    Lessels, C. M., & Boag, P. T. (1987).
   #    Unrepeatable repeatabilities: a common mistake.
   #    The Auk, 2(January), 116–121.
@@ -318,7 +318,7 @@ CalcRepetability <- function (ID, ind.data){
   #     ID: indentity of individuals
   #     ind.data: individual measurments
   # Return:
-  #     vector of repetabilities
+  #     vector of repeatabilities
   models.list = apply (ind.data, 2, function (vec){return (lm (vec ~ ID))})
   models.list = lapply (models.list, anova)
   rep.itself = function (lm.model){
@@ -333,7 +333,7 @@ CalcRepetability <- function (ID, ind.data){
 }
 
 AlphaRep <- function (cor.matrix, tam) {
-  # Calculates the matrix repetability using the equation in Cheverud 1996
+  # Calculates the matrix repeatability using the equation in Cheverud 1996
   # Quantitative genetic analysis of cranial morphology in the cotton-top
   # (Saguinus oedipus) and saddle-back (S. fuscicollis) tamarins. Journal of Evolutionary Biology 9, 5-42.
   #
@@ -341,7 +341,7 @@ AlphaRep <- function (cor.matrix, tam) {
   #     cor.matrix: correlation matrix
   #     tam: sample size?
   # Return:
-  #     matrix repetability
+  #     matrix repeatability
   vec <- cor.matrix[lower.tri(cor.matrix)]
   mvec <- mean(vec)
   varerro <- (1 - (mvec^2))/(tam-2)
@@ -352,14 +352,14 @@ AlphaRep <- function (cor.matrix, tam) {
 }
 
 BootstrapRep <- function (ind.data, nb = 100){
-  # Calculates the repetability of the covariance matrix of the suplied data
+  # Calculates the repeatability of the covariance matrix of the suplied data
   # via bootstrap ressampling
   #
   # Args:
   #     ind.data: original individual data
   #     nb = number of resamples
   # Return:
-  #     returns the mean repetability
+  #     returns the mean repeatability
   n.ind <-  dim (ind.data) [1]
   original.cov.matrix <- var (ind.data)
   v.rep <- c()
@@ -373,7 +373,7 @@ BootstrapRep <- function (ind.data, nb = 100){
 }
 
 MonteCarloRep <- function (x.matrix, ind, nit = 100){
-  # Calculates x.matrix repetability using parametric sampling
+  # Calculates x.matrix repeatability using parametric sampling
   #
   # Args:
   #     x.matrix: covariance or correlation matrix. 
@@ -430,7 +430,7 @@ ExtendMatrix <- function(cov.matrix, cutoff = NULL){
     plot(4:(p-3),var.grad)
     cutoff = floor(locator(1)$x)
   }
-  eVal[eVal<eVal[cutoff]] = eVal[cutoff]
+  eVal[eVal < eVal[cutoff]] = eVal[cutoff]
   extended.cov.matrix = eVec%*%diag(eVal)%*%t(eVec)
   colnames(extended.cov.matrix) = colnames(cov.matrix)
   rownames(extended.cov.matrix) = rownames(cov.matrix)
