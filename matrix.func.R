@@ -145,10 +145,10 @@ RandomSkewers <- function (cov.matrix.1, cov.matrix.2, nsk = 10000){
   traits <- dim (cov.matrix.1) [1]
   base.vector <- rnorm(traits)
   random.vectors <- array (rnorm (nsk * traits, mean = 0, sd = 1), c(traits, nsk))
-  random.vectors <- apply (random.vectors, 2, Normlize)
+  random.vectors <- apply (random.vectors, 2, Normalize)
   dist <- abs (base.vector %*% random.vectors)
-  dz1 <- apply (cov.matrix.1 %*% random.vectors, 2, Normlize)
-  dz2 <- apply (cov.matrix.2 %*% random.vectors, 2, Normlize)
+  dz1 <- apply (cov.matrix.1 %*% random.vectors, 2, Normalize)
+  dz2 <- apply (cov.matrix.2 %*% random.vectors, 2, Normalize)
   real <- abs (apply (dz1 * dz2, 2, sum))
   ac <- mean (real)
   stdev <- sd (real)
@@ -202,11 +202,11 @@ SRD <- function (cov.matrix.1, cov.matrix.2, nsk = 1000){
   #     SRD scores for each trait and significance using mean and sd of SRD scores
   size <- dim (cov.matrix.1)[1]
   r2s <- array (0, c(size,nsk))
-  beta <- apply (array (rnorm (size*nsk, mean = 0, sd = 1),c(size,nsk)),2, Normlize)
+  beta <- apply (array (rnorm (size*nsk, mean = 0, sd = 1),c(size,nsk)),2, Normalize)
   for (I in 1:nsk){
     beta.matrix <- diag (beta[,I])
-    dz1 <- apply (cov.matrix.1 %*% beta.matrix, 1, Normlize)
-    dz2 <- apply (cov.matrix.2 %*% beta.matrix, 1, Normlize)
+    dz1 <- apply (cov.matrix.1 %*% beta.matrix, 1, Normalize)
+    dz2 <- apply (cov.matrix.2 %*% beta.matrix, 1, Normalize)
     r2s[,I] <- colSums (dz1 * dz2)
   }
   # results
