@@ -44,53 +44,48 @@ TestModularity <- function (cor.matrix, modularity.hipot) {
   return (output)
 }
 
-MultiRsMantel <- function (matrix.list, matrix.comp.func = RandomSkewers,
-                           repeat.vector = NULL, iterations = 1000)
+MultiRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers,
+                           repeat.vector = NULL, iterations = 1000){
   # Performs multiple comparisons between a set of covariance of correlation matrices.
   #
   # Args:
   #  matrix.list: a list of covariance or correlation matrices
-  #  matrix.comp.func: function to use for comparison
+  #  MatrixCompFunc: function to use for comparison
   #  repeat.vector: vector of matrix repeatabities
-  #  iterations: number of random skewers of matrix permutations passed to matrix.comp.func
+  #  iterations: number of random skewers of matrix permutations passed to MatrixCompFunc
   #
   # Return:
   #  a list with two matrices containing $\Gamma$-values or average random
   #  skewers correlation and probabilities according to permutation test.
   #  if repeat.vector was also passed, values above the diagonal on the correlation matrix
   #  will contain corrected correlation values.
-  {
-    matrix.n <- length (matrix.list)
-    matrix.names <- names (matrix.list)
-    probabilities <- array (0, c(matrix.n, matrix.n))
-    correlations <- probabilities
-    for (i in 1:(matrix.n - 1))
-      {
-        for (j in (i+1):matrix.n)
-          {
-            cat (i, ' ', j, '\n')
-            comparing.now <- matrix.comp.func (matrix.list [[i]],
-                                               matrix.list [[j]], iterations)
-            correlations [i, j] <- comparing.now [1]
-            probabilities [i, j] <- comparing.now [2]
-            if (!is.null (repeat.vector))
-              correlations [j, i] <- correlations [i, j] /
-                sqrt (repeat.vector [i] * repeat.vector [j])
-          }
-      }
-    if (!is.null (repeat.vector))
-      {
-        repeat.mat <- sqrt (repeat.vector %*% t (repeat.vector))
-        corrected <- correlations / repeat.mat
-        correlations <- t (corrected) + correlations
-        diag (correlations) <- repeat.vector
-      }
-    rownames (correlations) <- matrix.names
-    colnames (correlations) <- matrix.names
-    dimnames (probabilities) <- dimnames (correlations)
-    output <- list ('correlations' = correlations, 'probabilities' = probabilities)
-    return (output)
+  matrix.n <- length (matrix.list)
+  matrix.names <- names (matrix.list)
+  probabilities <- array (0, c(matrix.n, matrix.n))
+  correlations <- probabilities
+  for (i in 1:(matrix.n - 1)) {
+    for (j in (i+1):matrix.n) {
+      cat (i, ' ', j, '\n')
+      comparing.now <- MatrixCompFunc (matrix.list [[i]],
+                                       matrix.list [[j]], iterations)
+      correlations [i, j] <- comparing.now [1]
+      probabilities [i, j] <- comparing.now [2]
+      if (!is.null (repeat.vector))
+        correlations [j, i] <- correlations [i, j] / sqrt (repeat.vector [i] * repeat.vector [j])
+    }
   }
+  if (!is.null (repeat.vector)) {
+    repeat.mat <- sqrt (repeat.vector %*% t (repeat.vector))
+    corrected <- correlations / repeat.mat
+    correlations <- t (corrected) + correlations
+    diag (correlations) <- repeat.vector
+  }
+  rownames (correlations) <- matrix.names
+  colnames (correlations) <- matrix.names
+  dimnames (probabilities) <- dimnames (correlations)
+  output <- list ('correlations' = correlations, 'probabilities' = probabilities)
+  return (output)
+}
 
 measure.rep <- function (data1, data2, taille = 30) ## talvez eu devesse ajustar cada modelo
   {
