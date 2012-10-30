@@ -143,7 +143,7 @@ RandomSkewers <- function (cov.matrix.1, cov.matrix.2, nsk = 10000){
   # Result:
   #     List with mean value of correlation, p value and standard deviation
   traits <- dim (cov.matrix.1) [1]
-  base.vector <- rnorm(traits)
+  base.vector <- Normalize(rnorm(traits))
   random.vectors <- array (rnorm (nsk * traits, mean = 0, sd = 1), c(traits, nsk))
   random.vectors <- apply (random.vectors, 2, Normalize)
   dist <- abs (base.vector %*% random.vectors)
