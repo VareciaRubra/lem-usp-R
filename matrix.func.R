@@ -127,14 +127,14 @@ adjust.sex.age <- function (data, sex, age, show.lm = FALSE)
   }
 
 BootstrapRep <- function (ind.data, nb = 100){
-  # Calculates the repetabilitie of the covariance matrix of the suplied data
+  # Calculates the repetability of the covariance matrix of the suplied data
   # via bootstrap ressampling
   #
   # Args:
   #     ind.data: original individual data
   #     nb = number of resamples
   # Results:
-  #     returns the mean repetabilitie
+  #     returns the mean repetability
   n.ind <-  dim (ind.data) [1]
   original.cov.matrix <- var (ind.data)
   v.rep <- c()
@@ -148,7 +148,7 @@ BootstrapRep <- function (ind.data, nb = 100){
 }
 
 BootstrapRepG <- function (ind.data, sex, age, ind, nb = 1000, corr = FALSE){
-  # Calculates the repetabilitie of the additive covariance matrix of the suplied data
+  # Calculates the repetability of the additive covariance matrix of the suplied data
   # via bootstrap ressampling
   #
   # Args:
@@ -371,16 +371,24 @@ SRD <- function (cov.matrix.1, cov.matrix.2, nsk = 1000){
                 "cormat" = cor (t(r2s))))
 }
 
-alpha.rep <- function (cor, tam)
-  {
-    vec <- cor[lower.tri(cor)]
-    mvec <- mean(vec)
-    varerro <- (1 - (mvec^2))/(tam-2)
-    vec2 <- vec^2
-    Ex2 <- mean (vec2)
-    varvec <- Ex2 - (mean(vec)^2)
-    return((varvec - varerro)/varvec)
-  }
+AlphaRep <- function (cor.matrix, tam) {
+  # Calculates the matrix repetability using the equation in Cheverud 1996
+  # Quantitative genetic analysis of cranial morphology in the cotton-top
+  # (Saguinus oedipus) and saddle-back (S. fuscicollis) tamarins. Journal of Evolutionary Biology 9, 5-42.
+  #
+  # Args:
+  #     cor.matrix: correlation matrix
+  #     tam: sample size?
+  # Result:
+  #     matrix repetability
+  vec <- cor.matrix[lower.tri(cor.matrix)]
+  mvec <- mean(vec)
+  varerro <- (1 - (mvec^2))/(tam-2)
+  vec2 <- vec^2
+  Ex2 <- mean (vec2)
+  varvec <- Ex2 - (mean(vec)^2)
+  return((varvec - varerro)/varvec)
+}
 
 KzrCor <- function (cov.matrix.1, cov.matrix.2, ret.dim = 19){
   # Calculates the Kzranowski correlation between matrices
