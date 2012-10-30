@@ -44,8 +44,7 @@ TestModularity <- function (cor.matrix, modularity.hipot) {
   return (output)
 }
 
-MultiRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers,
-                           repeat.vector = NULL, iterations = 1000){
+MultiRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers, repeat.vector = NULL, iterations = 1000){
   # Performs multiple comparisons between a set of covariance of correlation matrices.
   #
   # Args:
@@ -537,23 +536,28 @@ plot.pap.2 <- function (output, modhip, modwho = "", now = "")
     axis (4, las = 2)
   }
 
-rep.nova = function (ID, data.matrix)
+CalcRepetability = function (ID, ind.data){
+  # Calculates Repetabilities acording to:
+  #    Lessels, C. M., & Boag, P. T. (1987).
+  #    Unrepeatable repeatabilities: a common mistake.
+  #    The Auk, 2(January), 116–121.
+  # Args:
+  #     ID: indentity of individuals
+  #     ind.data: individual measurments
+  # Result:
+  #     vector of repetabilities
+  chars = ncol (ind.data)
+  model.gen = function (vec) return (lm (vec ~ ID))
+  models.list = apply (ind.data, 2, model.gen)
+  models.list = lapply (models.list, anova)
+  rep.itself = function (summ)
   {
-    ### Lessels, C. M., & Boag, P. T. (1987).
-    ### Unrepeatable repeatabilities: a common mistake.
-    ### The Auk, 2(January), 116–121.
-    chars = ncol (data.matrix)
-    model.gen = function (vec) return (lm (vec ~ ID))
-    models.list = apply (data.matrix, 2, model.gen)
-    models.list = lapply (models.list, anova)
-    rep.itself = function (summ)
-      {
-        msq = summ$'Mean Sq' ## 1 entre, 2 dentro
-        s2a = (msq[1] - msq[2])/2
-        out = s2a / (s2a + msq[2])
-        return (out)
-      }
-    out = sapply (models.list, rep.itself)
-    names (out) = colnames (data.matrix)
+    msq = summ$'Mean Sq' ## 1 entre, 2 dentro
+    s2a = (msq[1] - msq[2])/2
+    out = s2a / (s2a + msq[2])
     return (out)
   }
+  out = sapply (models.list, rep.itself)
+  names (out) = colnames (ind.data)
+  return (out)
+}
