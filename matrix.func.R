@@ -140,7 +140,7 @@ RandomSkewers <- function (cov.matrix.1, cov.matrix.2, nsk = 10000){
   # Args:
   #     cov.matrix.(1,2): Two covariance matrices to be compared
   #     nsk: Number of generated random skewers
-  # Result:
+  # Return:
   #     List with mean value of correlation, p value and standard deviation
   traits <- dim (cov.matrix.1) [1]
   base.vector <- Normalize(rnorm(traits))
@@ -165,7 +165,7 @@ MantelCor <- function (cor.matrix.1, cor.matrix.2, nit = 1000, mod = FALSE){
   #     cor.matrix.(1,2): correlation matrices being compared
   #     nit: number of permutations
   #     mod: for when testing binary modularity hipotesis
-  # Results:
+  # Return:
   #     matrix pearson correelation and significance.
   #     if mod==TRUE also returns average within, between and average ratio correlations
   fixed.matrix <- cor.matrix.1 [lower.tri (cor.matrix.1)]
@@ -198,7 +198,7 @@ SRD <- function (cov.matrix.1, cov.matrix.2, nsk = 1000){
   # Args:
   #     cov.matrix.(1,2): covariance matrices being compared
   #     nsk: number of RandomSkewers random vectors
-  # Result:
+  # Return:
   #     SRD scores for each trait and significance using mean and sd of SRD scores
   size <- dim (cov.matrix.1)[1]
   r2s <- array (0, c(size,nsk))
@@ -254,7 +254,7 @@ PlotSRD <- function (output, matrix.label = ""){
   # Args:
   #     output: the output from the SRD funtion
   #     matrix.label: string with the names of the matrices that were compared in the SRD function
-  # Result:
+  # Return:
   #     pretty plot
   layout (array (c(1,1,2,2),c(2,2)))
   par (mar = c(4.0, 4.0, 4.9, 0.4))
@@ -317,7 +317,7 @@ CalcRepetability <- function (ID, ind.data){
   # Args:
   #     ID: indentity of individuals
   #     ind.data: individual measurments
-  # Result:
+  # Return:
   #     vector of repetabilities
   models.list = apply (ind.data, 2, function (vec){return (lm (vec ~ ID))})
   models.list = lapply (models.list, anova)
@@ -340,7 +340,7 @@ AlphaRep <- function (cor.matrix, tam) {
   # Args:
   #     cor.matrix: correlation matrix
   #     tam: sample size?
-  # Result:
+  # Return:
   #     matrix repetability
   vec <- cor.matrix[lower.tri(cor.matrix)]
   mvec <- mean(vec)
@@ -358,7 +358,7 @@ BootstrapRep <- function (ind.data, nb = 100){
   # Args:
   #     ind.data: original individual data
   #     nb = number of resamples
-  # Results:
+  # Return:
   #     returns the mean repetability
   n.ind <-  dim (ind.data) [1]
   original.cov.matrix <- var (ind.data)
@@ -381,7 +381,7 @@ MonteCarloRep <- function (x.matrix, ind, nit = 100){
   #               else, will use RandomSkewers
   #     ind: number of indivuals on each sample
   #     nit: number of samples
-  # Results:
+  # Return:
   #     mean correlation of sample covariance matrices with original input x.matrix
   if (sum(diag(x.matrix)) == dim (x.matrix) [1]){
     Func <- MantelCor
@@ -409,7 +409,7 @@ ExtendMatrix <- function(cov.matrix, cutoff = NULL){
   #                 must be larger then 10x10
   #     cutoff: number of retained eigen values
   #             if is not supplied will be calculated using the gradient variance method
-  # Results:
+  # Return:
   #     returns the exetended convariance matrix
   if(dim(cov.matrix)[1]<10)
     stop("matrix is too small")
