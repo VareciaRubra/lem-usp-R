@@ -37,7 +37,7 @@ TestModularity <- function (cor.matrix, modularity.hipot) {
   no.hip <- no.hip + 1
   output <- array (0, c(5, no.hip))
   for (N in 1:no.hip){
-    tmp <- mantel (cor.matrix, m.hip.array[,,N], mod = TRUE)
+    tmp <- MantelCor (cor.matrix, m.hip.array[,,N], mod = TRUE)
     output[,N] <- tmp
   }
   dimnames(output) <- list (names (tmp), c (colnames (modularity.hipot),"Full Integration"))
@@ -52,7 +52,7 @@ MultiRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers,
   #  matrix.list: a list of covariance or correlation matrices
   #  MatrixCompFunc: function to use for comparison
   #  repeat.vector: vector of matrix repeatabities
-  #  iterations: number of random skewers of matrix permutations passed to MatrixCompFunc
+  #  iterations: number of RandomSkewers of matrix permutations passed to MatrixCompFunc
   #
   # Return:
   #  a list with two matrices containing $\Gamma$-values or average random
@@ -67,7 +67,8 @@ MultiRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers,
     for (j in (i+1):matrix.n) {
       cat (i, ' ', j, '\n')
       comparing.now <- MatrixCompFunc (matrix.list [[i]],
-                                       matrix.list [[j]], iterations)
+                                       matrix.list [[j]],
+                                       iterations)
       correlations [i, j] <- comparing.now [1]
       probabilities [i, j] <- comparing.now [2]
       if (!is.null (repeat.vector))
@@ -138,7 +139,7 @@ bootstrap.rep <- function (data, nb = 100)
       {
         strap <- sample (1:ind, ind, TRUE)
         strap.vcv <- var (data[strap,])
-        v.rep [N] <- random.skewers (or.vcv, strap.vcv, 1000) [1]
+        v.rep [N] <- RandomSkewers (or.vcv, strap.vcv, 1000) [1]
       }
     out <- mean (v.rep)
     return (out)
@@ -160,11 +161,11 @@ bootstrap.rep.G <- function (data, sex, age, ind, nb = 1000, corr = FALSE)
         strap <- sample (1:IND, ind, TRUE)
         strap.res <- adjust.sex.age (data[strap,],sex[strap],age[strap])
         strap.vcv <- var (strap.res)
-        v.rep [N] <- random.skewers (or.vcv, strap.vcv, 1) [1]
+        v.rep [N] <- RandomSkewers (or.vcv, strap.vcv, 1) [1]
         if (corr)
           {
             strap.cor <- cor (strap.res)
-            c.rep [N] <- mantel (or.cor, strap.cor, 1) [1]
+            c.rep [N] <- MantelCor (or.cor, strap.cor, 1) [1]
           }
       }
     out <- mean (v.rep)
@@ -179,10 +180,10 @@ bootstrap.rep.G <- function (data, sex, age, ind, nb = 1000, corr = FALSE)
       return (out)
   }
 
-rmvnorm2 <- function (n, theta = rep(0, nrow(sigma)),
+rmvNorm2 <- function (n, theta = rep(0, nrow(sigma)),
                       sigma = diag(length(theta)),
                       method = c("eigen", "svd", "chol")) {
-  # Calculates random deviates from a normal multivariate distribution
+  # Calculates random deviates from a Normal multivariate distribution
   #
   # Args:
   #   n: number os deviates
@@ -231,18 +232,18 @@ monte.carlo.rep <- function (matrix, ind, nit = 100)
   {
     if (sum(diag(matrix)) == dim (matrix) [1])
       {
-        Func <- mantel
+        Func <- MantelCor
         Type <- cor
       }
     else
       {
-        Func <- random.skewers
+        Func <- RandomSkewers
         Type <- var
       }
     R <- c()
     for (N in 1:nit)
       {
-        rand.samp <- rmvnorm2 (ind, rep(0, times = dim (matrix)[1]),
+        rand.samp <- rmvNorm2 (ind, rep(0, times = dim (matrix)[1]),
                               sigma = matrix, method = "chol")
         rand.matrix <- Type (rand.samp)
         R[N] <- Func (matrix, rand.matrix, 1000)[1]
@@ -250,47 +251,42 @@ monte.carlo.rep <- function (matrix, ind, nit = 100)
     return (mean(R))
   }
 
+Norm = function(x){return(sqrt(sum(x*x)))}
+Normalize = function(x){return(x/Norm(x))}
 
-normalize <- function (x)
-  {
-    xn <- c()
-    xn <- x / sqrt (sum (x^2))
-    return (xn)
-  }
+RandomSkewers <- function (cov.matrix.1, cov.matrix.2, nsk = 10000){
+  # Calculates covariance matrix correlation via random skewers
+  # Args:
+  #     cov.matrix.(1,2): Two covariance matrices to be compared
+  #     nsk: Number of generated random skewers
+  # Result:
+  #     List with mean value of correlation, p value and standard deviation
+  traits <- dim (cov.matrix.1) [1]
+  base.vector <- rnorm(traits)
+  random.vectors <- array (rnorm (nsk * traits, mean = 0, sd = 1), c(traits, nsk))
+  random.vectors <- apply (random.vectors, 2, Normlize)
+  dist <- abs (base.vector %*% random.vectors)
+  dz1 <- apply (cov.matrix.1 %*% random.vectors, 2, Normlize)
+  dz2 <- apply (cov.matrix.2 %*% random.vectors, 2, Normlize)
+  real <- abs (apply (dz1 * dz2, 2, sum))
+  ac <- mean (real)
+  stdev <- sd (real)
+  prob <- sum (real < dist) / nsk
+  output <- c(ac, prob, stdev)
+  names(output) <- c("AC","P","SD")
+  return(output)
+}
 
-norma <- function (x)
+MantelCor <- function (corr1, corr2, nit = 1000, mod = FALSE)
   {
-    return (sqrt (sum (x^2)))
-  }
-
-random.skewers <- function (vcv1, vcv2, nsk = 10000)
-  {
-    size <- dim (vcv1) [1]
-    isovec <- normalize (rep (1, times = size))
-    rvec <- array (rnorm (nsk * size, mean = 0, sd = 1), c(size, nsk))
-    rvec <- apply (rvec, 2, normalize)
-    dist <- abs (isovec %*% rvec)
-    dz1 <- apply (vcv1 %*% rvec, 2, normalize)
-    dz2 <- apply (vcv2 %*% rvec, 2, normalize)
-    real <- abs (apply (dz1 * dz2, 2, sum))
-    ac <- mean (real)
-    stdev <- sd (real)
-    prob <- sum (real < dist) / nsk
-    output <- c(ac, prob, stdev)
-    names(output) <- c("AC","P","SD")
-    return(output)
-  }
-
-mantel <- function (corr1, corr2, nit = 1000, mod = FALSE)
-  {
-    fix <- normalize (corr1 [lower.tri (corr1)])
-    mob <- normalize (corr2 [lower.tri (corr2)])
+    fix <- Normlize (corr1 [lower.tri (corr1)])
+    mob <- Normlize (corr2 [lower.tri (corr2)])
     real <- cor (cbind (fix,mob))[1,2]
     dist <- c()
     for (N in 1:nit)
       {
         shuffle <- sample (1:dim(corr1)[1])
-        mobb <- normalize (corr2 [shuffle, shuffle] [lower.tri (corr1)])
+        mobb <- Normlize (corr2 [shuffle, shuffle] [lower.tri (corr1)])
         dist[N] <- cor (cbind (fix,mobb))[1,2]
       }
     prob <- sum (dist > as.vector(real)) / nit
@@ -312,19 +308,14 @@ mantel <- function (corr1, corr2, nit = 1000, mod = FALSE)
 
 papyrus <- function (vcv1, vcv2, nsk = 1000)
 {
-  normalize <- function (x)
-    {
-      xn <- x/sqrt(sum(x^2))
-      return (xn)
-    }
   size <- dim (vcv1)[1]
   r2s <- array (0, c(size,nsk))
-  beta <- apply (array (rnorm (size*nsk, mean = 0, sd = 1),c(size,nsk)),2, normalize)
+  beta <- apply (array (rnorm (size*nsk, mean = 0, sd = 1),c(size,nsk)),2, Normlize)
   for (I in 1:nsk)
     {
       beta.matrix <- diag (beta[,I])
-      dz1 <- apply (vcv1 %*% beta.matrix, 1, normalize)
-      dz2 <- apply (vcv2 %*% beta.matrix, 1, normalize)
+      dz1 <- apply (vcv1 %*% beta.matrix, 1, Normlize)
+      dz2 <- apply (vcv2 %*% beta.matrix, 1, Normlize)
       r2s[,I] <- colSums (dz1 * dz2)
     }
   # results
