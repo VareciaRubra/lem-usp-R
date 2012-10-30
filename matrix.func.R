@@ -75,9 +75,6 @@ MultiRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers, repeat.v
     }
   }
   if (!is.null (repeat.vector)) {
-    repeat.mat <- sqrt (repeat.vector %*% t (repeat.vector))
-    corrected <- correlations / repeat.mat
-    correlations <- t (corrected) + correlations
     diag (correlations) <- repeat.vector
   }
   rownames (correlations) <- matrix.names
