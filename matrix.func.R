@@ -58,12 +58,12 @@ MultiRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers, repeat.v
   #  skewers correlation and probabilities according to permutation test.
   #  if repeat.vector was also passed, values above the diagonal on the correlation matrix
   #  will contain corrected correlation values.
-  matrix.n <- length (matrix.list)
+  n.matrix <- length (matrix.list)
   matrix.names <- names (matrix.list)
-  probabilities <- array (0, c(matrix.n, matrix.n))
+  probabilities <- array (0, c(n.matrix, n.matrix))
   correlations <- probabilities
-  for (i in 1:(matrix.n - 1)) {
-    for (j in (i+1):matrix.n) {
+  for (i in 1:(n.matrix - 1)) {
+    for (j in (i+1):n.matrix) {
       cat (i, ' ', j, '\n')
       comparing.now <- MatrixCompFunc (matrix.list [[i]],
                                        matrix.list [[j]],
@@ -129,20 +129,26 @@ adjust.sex.age <- function (data, sex, age, show.lm = FALSE)
       return (out)
   }
 
-bootstrap.rep <- function (data, nb = 100)
-  {
-    ind <-  dim (data) [1]
-    or.vcv <- var (data)
-    v.rep <- c()
-    for (N in 1:nb)
-      {
-        strap <- sample (1:ind, ind, TRUE)
-        strap.vcv <- var (data[strap,])
-        v.rep [N] <- RandomSkewers (or.vcv, strap.vcv, 1000) [1]
-      }
-    out <- mean (v.rep)
-    return (out)
+BootstrapRep <- function (ind.data, nb = 100){
+  # Calculates the repetabilitie of the covariance matrix of the suplied data
+  # via bootstrap ressampling
+  #
+  # Args: 
+  #     ind.data: original individual data
+  #     nb = number of resamples
+  # Results:
+  #     returns the mean repetabilitie
+  n.ind <-  dim (ind.data) [1]
+  original.cov.matrix <- var (ind.data)
+  v.rep <- c()
+  for (N in 1:nb){
+    sampled.data <- sample (1:n.ind, n.ind, TRUE)
+    sampled.data.cov.matrix <- var (ind.data[sampled.data,])
+    v.rep [N] <- RandomSkewers (original.cov.matrix, sampled.data.cov.matrix, 1000) [1]
   }
+  out <- mean (v.rep)
+  return (out)
+}
 
 bootstrap.rep.G <- function (data, sex, age, ind, nb = 1000, corr = FALSE)
   {
