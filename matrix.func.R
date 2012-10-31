@@ -301,11 +301,11 @@ KzrCor <- function (cov.matrix.1, cov.matrix.2, ret.dim = 19){
   #     ret.dim: number of retained dimensions in the comparison
   # Return:
   #     Kzranowski correlation
-  func <- function (x) return (eigen(x)$vectors[,1:d])
+  func <- function (x) return (eigen(x)$vectors[,1:ret.dim])
   A <- func (cov.matrix.1)
   B <- func (cov.matrix.2)
   S <- t(A) %*% B %*% t(B) %*% A
-  SL <- sum (eigen(S)$values) / d
+  SL <- sum (eigen(S)$values) / ret.dim
   return (SL)
 }
 
