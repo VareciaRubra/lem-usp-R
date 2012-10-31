@@ -339,16 +339,13 @@ AlphaRep <- function (cor.matrix, tam) {
   #
   # Args:
   #     cor.matrix: correlation matrix
-  #     tam: sample size?
+  #     tam: sample size
   # Return:
   #     matrix repetability
   vec <- cor.matrix[lower.tri(cor.matrix)]
-  mvec <- mean(vec)
-  varerro <- (1 - (mvec^2))/(tam-2)
-  vec2 <- vec^2
-  Ex2 <- mean (vec2)
-  varvec <- Ex2 - (mean(vec)^2)
-  return((varvec - varerro)/varvec)
+  var.erro <- (1 - mean(vec)^2)/(tam-2)
+  var.vec <- var(vec)
+  return((var.vec - var.erro)/var.vec)
 }
 
 BootstrapRep <- function (ind.data, nb = 100){
