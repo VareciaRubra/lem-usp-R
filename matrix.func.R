@@ -53,7 +53,7 @@ MultiRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers, repeat.v
   # Args:
   #  matrix.list: a list of covariance or correlation matrices
   #  MatrixCompFunc: function to use for comparison
-  #  repeat.vector: vector of matrix repeatabities
+  #  repeat.vector: vector of matrix repeatabilities
   #  iterations: number of RandomSkewers or matrix permutations passed to MatrixCompFunc
   #
   # Return:
