@@ -475,8 +475,8 @@ HansenHouleAverage <- function (mat, nsk <- 10000)
           crit.value <- null.dist [round (0.95 * nsk)]
           cat ('critical value: ', crit.value, '\n')
           parm.dist <- array (0, c(nsk, 8))
-          HansenHouleWarp <- function (hh.func) return (apply (beta.mat, 2, hh.func, cov.matrix = mat))
-          parm.dist [,1:6] <- sapply (hansen.houle, HansenHouleWarp)
+          HansenHouleWrap <- function (hh.func) return (apply (beta.mat, 2, hh.func, cov.matrix = mat))
+          parm.dist [,1:6] <- sapply (hansen.houle, HansenHouleWrap)
           parm.dist[,7] <- as.numeric (parm.dist[,5] > crit.value)
           parm.dist[,8] <- as.numeric (parm.dist[,6] > crit.value)
           parm.dist <- cbind (parm.dist, null.dist)
@@ -499,9 +499,9 @@ hh.mod <- function (mat, hip, nsk = 10000)
   with (load.of.functions,
         {
           out <- HansenHouleAverage (mat, nsk)
-          HansenHouleWarp2 <- function (hh.func) return (apply (hip, 2, hh.func, cov.matrix = mat))
+          HansenHouleWrap2 <- function (hh.func) return (apply (hip, 2, hh.func, cov.matrix = mat))
           hip <- apply (hip, 2, Normalize)
-          out$mod <- sapply (hansen.houle, HansenHouleWarp2)
+          out$mod <- sapply (hansen.houle, HansenHouleWrap2)
           return (out)
         })
 }
