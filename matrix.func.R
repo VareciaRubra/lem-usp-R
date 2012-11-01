@@ -481,7 +481,7 @@ HansenHouleAverage <- function (mat, nsk <- 10000)
           parm.dist[,8] <- as.numeric (parm.dist[,6] > crit.value)
           parm.dist <- cbind (parm.dist, null.dist)
           colnames (parm.dist) <- c('resp','evol','cond.evol', 'auto',
-                                   'flex','const','flex.n', 'const.n', 'null.dist')
+                                    'flex','const','flex.n', 'const.n', 'null.dist')
           parm.av <- colMeans (parm.dist)
           parm.av[7:8] <- parm.av[7:8] * nsk
           pc1 <- eigen (mat)$vectors[,1]
