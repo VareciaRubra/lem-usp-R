@@ -1,5 +1,5 @@
-Norm = function(x){return(sqrt(sum(x*x)))}
-Normalize = function(x){return(x/Norm(x))}
+Norm <- function(x){return(sqrt(sum(x*x)))}
+Normalize <- function(x){return(x/Norm(x))}
 
 RemoveSize <- function (cov.matrix){
   # Removes first principal component effect in cov.matrix.
@@ -451,7 +451,7 @@ Constraints             <- function (beta, cov.matrix) return (abs (t (Normalize
 MeanSquaredCorrelation <- function (cov.matrix) return (mean (cov2cor (cov.matrix) [lower.tri (diag (nrow (cov.matrix)))]^2))
 Pc1Percent             <- function (cov.matrix) return (eigen (cov.matrix)$values [1] / sum (eigen (cov.matrix)$values))
 
-load.of.functions = list (Norm,
+load.of.functions <- list (Norm,
                           Normalize,
                           hansen.houle = list (Respondability,
                                                Evolvability,
@@ -462,65 +462,65 @@ load.of.functions = list (Norm,
                           MeanSquaredCorrelation,
                           Pc1Percent)
 
-HansenHouleAverage = function (mat, nsk = 10000)
+HansenHouleAverage <- function (mat, nsk <- 10000)
 {
   with (load.of.functions,
         {
-          n.char = dim (mat) [1]
-          beta.mat = array (rnorm (n.char * nsk), c(n.char, nsk))
-          beta.mat = apply (beta.mat, 2, Normalize)
-          iso.vec = Normalize (rep(1, times = n.char))
-          null.dist = abs (t (iso.vec) %*% beta.mat)
-          null.dist = sort (null.dist)
-          crit.value = null.dist [round (0.95 * nsk)]
+          n.char <- dim (mat) [1]
+          beta.mat <- array (rnorm (n.char * nsk), c(n.char, nsk))
+          beta.mat <- apply (beta.mat, 2, Normalize)
+          iso.vec <- Normalize (rep(1, times = n.char))
+          null.dist <- abs (t (iso.vec) %*% beta.mat)
+          null.dist <- sort (null.dist)
+          crit.value <- null.dist [round (0.95 * nsk)]
           cat ('critical value: ', crit.value, '\n')
-          parm.dist = array (0, c(nsk, 8))
-          HansenHouleWarp = function (hh.func) return (apply (beta.mat, 2, hh.func, cov.matrix = mat))
-          parm.dist [,1:6] = sapply (hansen.houle, HansenHouleWarp)
-          parm.dist[,7] = as.numeric (parm.dist[,5] > crit.value)
-          parm.dist[,8] = as.numeric (parm.dist[,6] > crit.value)
-          parm.dist = cbind (parm.dist, null.dist)
-          colnames (parm.dist) = c('resp','evol','cond.evol', 'auto',
+          parm.dist <- array (0, c(nsk, 8))
+          HansenHouleWarp <- function (hh.func) return (apply (beta.mat, 2, hh.func, cov.matrix = mat))
+          parm.dist [,1:6] <- sapply (hansen.houle, HansenHouleWarp)
+          parm.dist[,7] <- as.numeric (parm.dist[,5] > crit.value)
+          parm.dist[,8] <- as.numeric (parm.dist[,6] > crit.value)
+          parm.dist <- cbind (parm.dist, null.dist)
+          colnames (parm.dist) <- c('resp','evol','cond.evol', 'auto',
                                    'flex','const','flex.n', 'const.n', 'null.dist')
-          parm.av = colMeans (parm.dist)
-          parm.av[7:8] = parm.av[7:8] * nsk
-          pc1 = eigen (mat)$vectors[,1]
-          HansenHouleWrapPc1 = function (hh.func) return (hh.func (beta = pc1, cov.matrix = mat))
-          maximum = sapply (hansen.houle, HansenHouleWrapPc1)
-          integration = c (MeanSquaredCorrelation (mat), Pc1Percent (mat))
-          names (integration) = c ('MeanSquaredCorrelation', 'pc1%')
-          parm.av = c (integration, parm.av)
+          parm.av <- colMeans (parm.dist)
+          parm.av[7:8] <- parm.av[7:8] * nsk
+          pc1 <- eigen (mat)$vectors[,1]
+          HansenHouleWrapPc1 <- function (hh.func) return (hh.func (beta = pc1, cov.matrix = mat))
+          maximum <- sapply (hansen.houle, HansenHouleWrapPc1)
+          integration <- c (MeanSquaredCorrelation (mat), Pc1Percent (mat))
+          names (integration) <- c ('MeanSquaredCorrelation', 'pc1%')
+          parm.av <- c (integration, parm.av)
           return (list ('dist' = parm.dist, 'mean' = parm.av, 'max.val' = maximum))
         })
 }
 
-hh.mod = function (mat, hip, nsk = 10000)
+hh.mod <- function (mat, hip, nsk = 10000)
 {
   with (load.of.functions,
         {
-          out = HansenHouleAverage (mat, nsk)
-          HansenHouleWarp2 = function (hh.func) return (apply (hip, 2, hh.func, cov.matrix = mat))
-          hip = apply (hip, 2, Normalize)
-          out$mod = sapply (hansen.houle, HansenHouleWarp2)
+          out <- HansenHouleAverage (mat, nsk)
+          HansenHouleWarp2 <- function (hh.func) return (apply (hip, 2, hh.func, cov.matrix = mat))
+          hip <- apply (hip, 2, Normalize)
+          out$mod <- sapply (hansen.houle, HansenHouleWarp2)
           return (out)
         })
 }
 
-plot.mod.evol = function (evo.out, new.dev = TRUE)
+plot.mod.evol <- function (evo.out, new.dev = TRUE)
 {
   require (MASS)
   with (evo.out,
         {
-          n.hip = nrow (mod)
-          n.sk = nrow (dist)
+          n.hip <- nrow (mod)
+          n.sk <- nrow (dist)
           if (new.dev)
             par (mfrow = c(2,3))
-          out = array (0, dim (mod))
+          out <- array (0, dim (mod))
           for (j in 1:6)
           {
-            dist[,j] = dist [,j] / max.val [j]
-            mod [,j] = mod [,j] / max.val [j]
-            x.lim = c (ifelse (min (mod[,j]) < min (dist[,j]), min (mod[,j]), min (dist[,j])),
+            dist[,j] <- dist [,j] / max.val [j]
+            mod [,j] <- mod [,j] / max.val [j]
+            x.lim <- c (ifelse (min (mod[,j]) < min (dist[,j]), min (mod[,j]), min (dist[,j])),
                        ifelse (max (mod[,j]) > max (dist[,j]), max (mod[,j]), max (dist[,j])))
             truehist (dist[,j], prob = TRUE, border = 'grey', col = 'white', xlim = x.lim,
                       xlab = colnames (mod)[j], main = '')
@@ -531,35 +531,35 @@ plot.mod.evol = function (evo.out, new.dev = TRUE)
             {
               abline (v = mod[i,j], lty = 3, col = rgb (.2,.2,.2))
               mtext (side = 3, at = mod[i,j], text = rownames (mod)[i], las = 3, cex = 0.7)
-              out [i,j] = sum (mod [i,j] < dist[,j])/n.sk
+              out [i,j] <- sum (mod [i,j] < dist[,j])/n.sk
             }
           }
-          dimnames (out) = dimnames (mod)
+          dimnames (out) <- dimnames (mod)
           return (out)
         })
 }
 
-plot.group.evol = function (evol.list)
+plot.group.evol <- function (evol.list)
 {
-  upper.crit = function (vec, val = .95)
+  upper.crit <- function (vec, val = .95)
   {
-    n.obs = length (vec)
-    vec = sort (vec)
-    crit.pos = round (val * n.obs)
+    n.obs <- length (vec)
+    vec <- sort (vec)
+    crit.pos <- round (val * n.obs)
     return (vec[crit.pos])
   }
-  plot.single = function (evol.list, which)
+  plot.single <- function (evol.list, which)
   {
-    n.obj = length (evol.list)
-    extract.dist = function (element, which) return (element$dist[,which]/element$max.val[which])
-    to.plot = sapply (evol.list, extract.dist, which)
-    colnames (to.plot) = names (evol.list)
+    n.obj <- length (evol.list)
+    extract.dist <- function (element, which) return (element$dist[,which]/element$max.val[which])
+    to.plot <- sapply (evol.list, extract.dist, which)
+    colnames (to.plot) <- names (evol.list)
     boxplot (to.plot, cex = 0.2, boxwex = 0.5, border = rgb (.6,.6,.6))
-    extract.mod = function (element, which) return (element$mod[,which]/element$max.val[which])
-    extract.mod.names = function (element) return (rownames (element$mod))
-    mod.values = lapply (evol.list, extract.mod, which)
-    mod.names =  lapply (evol.list, extract.mod.names)
-    crits = apply (to.plot, 2, upper.crit)
+    extract.mod <- function (element, which) return (element$mod[,which]/element$max.val[which])
+    extract.mod.names <- function (element) return (rownames (element$mod))
+    mod.values <- lapply (evol.list, extract.mod, which)
+    mod.names <-  lapply (evol.list, extract.mod.names)
+    crits <- apply (to.plot, 2, upper.crit)
     for (i in 1:n.obj)
     {
       segments (x0 = i - 0.25, x1 = i + 0.25, y0 = crits [i],
