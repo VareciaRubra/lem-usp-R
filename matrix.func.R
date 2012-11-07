@@ -42,29 +42,6 @@ MonteCarloR2 <- function (corr.matrix, sample.size, iterations = 1000)
     return (r2)
   }
 
-mod.main <- function (cor, modhip, nit = 1000)
-  {
-    no.hip <- dim (modhip) [2]
-    traits <- dim (modhip) [1]
-    m.hip.array <- array (0, c(traits, traits, no.hip + 1))
-    for (N in 1:no.hip)
-      {
-        for (L in 1:traits)
-          {
-            for (M in 1:traits)
-              {
-                m.hip.array[L,M,N] <- ifelse (modhip[L,N] & modhip[M,N], 1, 0)
-              }
-          }
-      }
-    m.hip.array[,,no.hip+1] <- as.integer (as.logical (apply (m.hip.array, c(1,2), sum)))
-    no.hip <- no.hip + 1
-    output <- array (0, c(5, no.hip))
-    for (N in 1:no.hip)
-      {
-        tmp <- mantel (cor, m.hip.array[,,N], mod = TRUE)
-        output[,N] <- tmp
-=======
 TestModularity <- function (cor.matrix, modularity.hipot) {
   # Tests modularity hipotesis using cor.matrix matrix and trait groupings
   #
@@ -82,7 +59,6 @@ TestModularity <- function (cor.matrix, modularity.hipot) {
     for (L in 1:traits){
       for (M in 1:traits){
         m.hip.array[L,M,N] <- ifelse (modularity.hipot[L,N] & modularity.hipot[M,N], 1, 0)
->>>>>>> 21b344567022f746e717a14f0d575f6ab4cc02b2
       }
     }
   }
