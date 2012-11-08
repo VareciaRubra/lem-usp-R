@@ -1,13 +1,14 @@
 Norm <- function(x){return(sqrt(sum(x*x)))}
 Normalize <- function(x){return(x/Norm(x))}
 
-RemoveSize <- function (cov.matrix){
+RemoveSize <- function (cov.matrix)
   # Removes first principal component effect in cov.matrix.
   #
   # Args:
   #   cov.matrix: A simetric covariance matrix
   # Return:
   #   cov.matrix with size removed
+{
   cov.matrix.svd  <-  svd(cov.matrix)
   size.eigen.vector <- cov.matrix.svd$u[, 1]
   size.eigen.value <- cov.matrix.svd$d[1]
@@ -28,20 +29,20 @@ MonteCarloR2 <- function (corr.matrix, sample.size, iterations = 1000)
   #   a vector with iterations + 1 entries; the first entry corresponds
   #   to the actual r2 value calculated from the original matrix. The
   #   remaining entries are values calculated from the resampling procedure.
-  {
-    R2 <- function (matrix)
-      return (mean (matrix [lower.tri (matrix)]^2))
-    n.traits <- dim (corr.matrix) [1]
-    populations <- list ()
-    for (i in 1:iterations)
-      populations [[i]] <- rmvnorm2 (sample.size, sigma = corr.matrix, method = 'chol')
-    it.matrices <- lapply (populations, cor)
-    it.r2 <- sapply (it.matrices, R2)
-    r2 <- c (R2 (corr.matrix), it.r2)
-    return (r2)
-  }
+{
+  R2 <- function (matrix)
+    return (mean (matrix [lower.tri (matrix)]^2))
+  n.traits <- dim (corr.matrix) [1]
+  populations <- list ()
+  for (i in 1:iterations)
+    populations [[i]] <- rmvnorm2 (sample.size, sigma = corr.matrix, method = 'chol')
+  it.matrices <- lapply (populations, cor)
+  it.r2 <- sapply (it.matrices, R2)
+  r2 <- c (R2 (corr.matrix), it.r2)
+  return (r2)
+}
 
-TestModularity <- function (cor.matrix, modularity.hipot) {
+TestModularity <- function (cor.matrix, modularity.hipot)
   # Tests modularity hipotesis using cor.matrix matrix and trait groupings
   #
   # Args:
@@ -51,6 +52,7 @@ TestModularity <- function (cor.matrix, modularity.hipot) {
   #                     if modularity.hipot[i,j] == 1, trait i is in module j.
   # Return:
   #   list with mantel correlation of cor.matrix with binary hipotesis matrices
+{
   no.hip <- dim (modularity.hipot) [2]
   traits <- dim (modularity.hipot) [1]
   m.hip.array <- array (0, c(traits, traits, no.hip + 1))
@@ -72,7 +74,7 @@ TestModularity <- function (cor.matrix, modularity.hipot) {
   return (output)
 }
 
-MultiRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers, repeat.vector = NULL, iterations = 1000){
+MultiRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers, repeat.vector = NULL, iterations = 1000)
   # Performs multiple comparisons between a set of covariance of correlation matrices.
   #
   # Args:
@@ -86,6 +88,7 @@ MultiRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers, repeat.v
   #  skewers correlation and probabilities according to permutation test.
   #  if repeat.vector was also passed, values above the diagonal on the correlation matrix
   #  will contain corrected correlation values.
+{
   n.matrix <- length (matrix.list)
   matrix.names <- names (matrix.list)
   probabilities <- array (0, c(n.matrix, n.matrix))
@@ -114,7 +117,7 @@ MultiRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers, repeat.v
 
 rmvNorm2 <- function (n, theta = rep(0, nrow(sigma)),
                       sigma = diag(length(theta)),
-                      method = c("eigen", "svd", "chol")) {
+                      method = c("eigen", "svd", "chol"))
   # Calculates random deviates from a Normal multivariate distribution
   #
   # Args:
@@ -125,6 +128,7 @@ rmvNorm2 <- function (n, theta = rep(0, nrow(sigma)),
   #
   # Return:
   #   Vector of deviates
+{
   if (length(theta) != nrow(sigma)) {
     stop("theta and sigma have non-conforming size")
   }
@@ -160,13 +164,14 @@ rmvNorm2 <- function (n, theta = rep(0, nrow(sigma)),
   return(random.deviates)
 }
 
-RandomSkewers <- function (cov.matrix.1, cov.matrix.2, nsk = 10000){
+RandomSkewers <- function (cov.matrix.1, cov.matrix.2, nsk = 10000)
   # Calculates covariance matrix correlation via random skewers
   # Args:
   #     cov.matrix.(1,2): Two covariance matrices to be compared
   #     nsk: Number of generated random skewers
   # Return:
   #     List with mean value of correlation, p value and standard deviation
+{
   traits <- dim (cov.matrix.1) [1]
   base.vector <- Normalize(rnorm(traits))
   random.vectors <- array (rnorm (nsk * traits, mean = 0, sd = 1), c(traits, nsk))
@@ -183,7 +188,7 @@ RandomSkewers <- function (cov.matrix.1, cov.matrix.2, nsk = 10000){
   return(output)
 }
 
-MantelCor <- function (cor.matrix.1, cor.matrix.2, nit = 1000, mod = FALSE){
+MantelCor <- function (cor.matrix.1, cor.matrix.2, nit = 1000, mod = FALSE)
   # Calculates matrix correlation with confidence intervals using mantel permutations
   #
   # Args:
@@ -193,6 +198,7 @@ MantelCor <- function (cor.matrix.1, cor.matrix.2, nit = 1000, mod = FALSE){
   # Return:
   #     matrix pearson correelation and significance.
   #     if mod==TRUE also returns average within, between and average ratio correlations
+{
   fixed.matrix <- cor.matrix.1 [lower.tri (cor.matrix.1)]
   shuffled.matrix <- cor.matrix.2 [lower.tri (cor.matrix.2)]
   correlation <- cor (fixed.matrix,shuffled.matrix)
@@ -217,7 +223,7 @@ MantelCor <- function (cor.matrix.1, cor.matrix.2, nit = 1000, mod = FALSE){
   return (output)
 }
 
-SRD <- function (cov.matrix.1, cov.matrix.2, nsk = 1000){
+SRD <- function (cov.matrix.1, cov.matrix.2, nsk = 1000)
   # Calculates the selection response decomposition comparison between covariance matrices
   #
   # Args:
@@ -225,6 +231,7 @@ SRD <- function (cov.matrix.1, cov.matrix.2, nsk = 1000){
   #     nsk: number of RandomSkewers random vectors
   # Return:
   #     SRD scores for each trait and significance using mean and sd of SRD scores
+{
   size <- dim (cov.matrix.1)[1]
   r2s <- array (0, c(size,nsk))
   beta <- apply (array (rnorm (size*nsk, mean = 0, sd = 1),c(size,nsk)),2, Normalize)
@@ -273,7 +280,7 @@ SRD <- function (cov.matrix.1, cov.matrix.2, nsk = 1000){
                 "cormat" = cor (t(r2s))))
 }
 
-PlotSRD <- function (output, matrix.label = ""){
+PlotSRD <- function (output, matrix.label = "")
   # Plots the output of the SRD function in standard format
   #
   # Args:
@@ -281,6 +288,7 @@ PlotSRD <- function (output, matrix.label = ""){
   #     matrix.label: string with the names of the matrices that were compared in the SRD function
   # Return:
   #     pretty plot
+{
   layout (array (c(1,1,2,2),c(2,2)))
   par (mar = c(4.0, 4.0, 4.9, 0.4))
   mean.r2 <- output$out[,1]
@@ -318,23 +326,27 @@ PlotSRD <- function (output, matrix.label = ""){
   axis (4, las = 2)
 }
 
-KzrCor <- function (cov.matrix.1, cov.matrix.2, ret.dim = 19){
+KzrCor <- function (cov.matrix.1, cov.matrix.2, ret.dim = NULL)
   # Calculates the Kzranowski correlation between matrices
   #
   # Args:
   #     cov.matrix.(1,2): covariance being compared
-  #     ret.dim: number of retained dimensions in the comparison
+  #     ret.dim: number of retained dimensions in the comparison,
+  #              default for nxn matrix is n/2-1
   # Return:
   #     Kzranowski correlation
-  func <- function (x) return (eigen(x)$vectors[,1:ret.dim])
-  A <- func (cov.matrix.1)
-  B <- func (cov.matrix.2)
+{
+  if (is.null(ret.dim))
+    ret.dim = dim(cov.matrix.1)[1]/2 - 1
+  EigenVectors <- function (x) return (eigen(x)$vectors[,1:ret.dim])
+  A <- EigenVectors (cov.matrix.1)
+  B <- EigenVectors (cov.matrix.2)
   S <- t(A) %*% B %*% t(B) %*% A
   SL <- sum (eigen(S)$values) / ret.dim
   return (SL)
 }
 
-CalcRepeatability <- function (ID, ind.data){
+CalcRepeatability <- function (ID, ind.data)
   # Calculates Repeatabilities acording to:
   #    Lessels, C. M., & Boag, P. T. (1987).
   #    Unrepeatable repeatabilities: a common mistake.
@@ -344,6 +356,7 @@ CalcRepeatability <- function (ID, ind.data){
   #     ind.data: individual measurments
   # Return:
   #     vector of repeatabilities
+{
   models.list = apply (ind.data, 2, function (vec){return (lm (vec ~ ID))})
   models.list = lapply (models.list, anova)
   rep.itself = function (lm.model){
@@ -357,7 +370,7 @@ CalcRepeatability <- function (ID, ind.data){
   return (out)
 }
 
-AlphaRep <- function (cor.matrix, tam) {
+AlphaRep <- function (cor.matrix, tam)
   # Calculates the matrix repeatability using the equation in Cheverud 1996
   # Quantitative genetic analysis of cranial morphology in the cotton-top
   # (Saguinus oedipus) and saddle-back (S. fuscicollis) tamarins. Journal of Evolutionary Biology 9, 5-42.
@@ -367,13 +380,14 @@ AlphaRep <- function (cor.matrix, tam) {
   #     tam: sample size
   # Return:
   #     matrix repeatability
+{
   vec <- cor.matrix[lower.tri(cor.matrix)]
   var.erro <- (1 - mean(vec)^2)/(tam-2)
   var.vec <- var(vec)
   return((var.vec - var.erro)/var.vec)
 }
 
-BootstrapRep <- function (ind.data, nb = 100){
+BootstrapRep <- function (ind.data, nb = 100)
   # Calculates the repeatability of the covariance matrix of the suplied data
   # via bootstrap ressampling
   #
@@ -382,6 +396,7 @@ BootstrapRep <- function (ind.data, nb = 100){
   #     nb = number of resamples
   # Return:
   #     returns the mean repeatability
+{
   n.ind <-  dim (ind.data) [1]
   original.cov.matrix <- var (ind.data)
   v.rep <- c()
@@ -394,7 +409,7 @@ BootstrapRep <- function (ind.data, nb = 100){
   return (out)
 }
 
-MonteCarloRep <- function (x.matrix, ind, nit = 100){
+MonteCarloRep <- function (x.matrix, ind, nit = 100)
   # Calculates x.matrix repeatability using parametric sampling
   #
   # Args:
@@ -405,6 +420,7 @@ MonteCarloRep <- function (x.matrix, ind, nit = 100){
   #     nit: number of samples
   # Return:
   #     mean correlation of sample covariance matrices with original input x.matrix
+{
   if (sum(diag(x.matrix)) == dim (x.matrix) [1]){
     Func <- MantelCor
     Type <- cor
@@ -423,7 +439,7 @@ MonteCarloRep <- function (x.matrix, ind, nit = 100){
   return (mean(R))
 }
 
-ExtendMatrix <- function(cov.matrix, cutoff = NULL){
+ExtendMatrix <- function(cov.matrix, cutoff = NULL)
   # Calculates the noise controled covariance matrix using the extension method
   #
   # Args:
@@ -433,6 +449,7 @@ ExtendMatrix <- function(cov.matrix, cutoff = NULL){
   #             if is not supplied will be calculated using the gradient variance method
   # Return:
   #     returns the exetended convariance matrix
+{
   if(dim(cov.matrix)[1]<10)
     stop("matrix is too small")
   eigen.cov.matrix = eigen(cov.matrix)
