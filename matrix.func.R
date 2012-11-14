@@ -450,7 +450,8 @@ ExtendMatrix <- function(cov.matrix, cutoff = NULL)
   # Return:
   #     returns the exetended convariance matrix
 {
-  if(dim(cov.matrix)[1]<10)
+  p = dim(cov.matrix)[1]
+  if(dim(p<10)
     stop("matrix is too small")
   eigen.cov.matrix = eigen(cov.matrix)
   eVal = eigen.cov.matrix$values
