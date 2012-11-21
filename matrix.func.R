@@ -445,10 +445,10 @@ ExtendMatrix <- function(cov.matrix, cutoff = NULL)
   # Args:
   #     cov.matrix: covariance matrixe being extended.
   #                 must be larger then 10x10
-  #     cutoff: number of retained eigen values
+  #     cutoff: number of retained eigenvalues
   #             if is not supplied will be calculated using the gradient variance method
   # Return:
-  #     returns the exetended convariance matrix
+  #     returns the extended covariance matrix
 {
   p = dim(cov.matrix)[1]
   if(dim(p<10)
