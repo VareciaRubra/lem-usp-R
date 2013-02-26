@@ -86,7 +86,7 @@ MultiRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers, repeat.v
   # Return:
   #  a list with two matrices containing $\Gamma$-values or average random
   #  skewers correlation and probabilities according to permutation test.
-  #  if repeat.vector was also passed, values above the diagonal on the correlation matrix
+  #  if repeat.vector was also passed, values below the diagonal on the correlation matrix
   #  will contain corrected correlation values.
 {
   n.matrix <- length (matrix.list)
