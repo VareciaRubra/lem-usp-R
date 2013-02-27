@@ -613,7 +613,7 @@ plot.group.evol <- function (evol.list)
   }
 }
 
-residualMatrix <- function (model)
+ResidualMatrix <- function (model)
   {
     ## Calculates residual matrix from a estimated linear model
     ## Args:
