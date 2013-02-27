@@ -653,7 +653,7 @@ ParallelRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers,
   rownames (correlations) <- matrix.names
   colnames (correlations) <- matrix.names
   probabilities <- correlations
-  index <- which (lower.tri (diag (k)), arr.ind = TRUE)
+  index <- which (lower.tri (diag (n.matrix)), arr.ind = TRUE)
   singleComp = function (k)
     {
       i <- index [k,1]
@@ -664,21 +664,20 @@ ParallelRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers,
                                        iterations)
       return (comparing.now)
     }
-}
-corr.list = mclapply (1:n.matrix, singleComp)
-for (k in length (corr.list))
-  {
-    i <- index [k,1]
-    j <- index [k,2]
-    correlations [i, j] <- corr.list [[k]] [1]
-    probabilities [i, j] <- corr.list [[k]] [2]
-    if (!is.null (repeat.vector))
-      correlations [j, i] <- correlations [i, j] /
-        sqrt (repeat.vector [i] * repeat.vector [j])
+  corr.list = mclapply (1:n.matrix, singleComp)
+  for (k in 1:length (corr.list))
+    {
+      i <- index [k,1]
+      j <- index [k,2]
+      correlations [i, j] <- corr.list [[k]] [1]
+      probabilities [i, j] <- corr.list [[k]] [2]
+      if (!is.null (repeat.vector))
+        correlations [j, i] <- correlations [i, j] /
+          sqrt (repeat.vector [i] * repeat.vector [j])
+    }
+  if (!is.null (repeat.vector)) {
+    diag (correlations) <- repeat.vector
   }
-if (!is.null (repeat.vector)) {
-  diag (correlations) <- repeat.vector
-}
-output <- list ('correlations' = correlations, 'probabilities' = probabilities)
-return (output)
+  output <- list ('correlations' = correlations, 'probabilities' = probabilities)
+  return (output)
 }
