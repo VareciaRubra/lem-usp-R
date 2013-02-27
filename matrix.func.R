@@ -664,7 +664,7 @@ ParallelRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers,
                                        iterations)
       return (comparing.now)
     }
-  corr.list = mclapply (1:n.matrix, singleComp)
+  corr.list = mclapply (1:nrow (index), singleComp)
   for (k in 1:length (corr.list))
     {
       i <- index [k,1]
