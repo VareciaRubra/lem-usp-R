@@ -622,6 +622,6 @@ residualMatrix <- function (model)
     ##  cov.mat: residual covariance matrix
     res <- residuals (model)
     res.df <- model $ df.residual
-    cov.mat <- res %*% t (res) / res.df
+    cov.mat <- t (res) %*% res / res.df
     return (cov.mat)
   }
