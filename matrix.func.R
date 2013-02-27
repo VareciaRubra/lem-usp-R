@@ -176,10 +176,10 @@ RandomSkewers <- function (cov.matrix.1, cov.matrix.2, nsk = 10000)
   base.vector <- Normalize(rnorm(traits))
   random.vectors <- array (rnorm (nsk * traits, mean = 0, sd = 1), c(traits, nsk))
   random.vectors <- apply (random.vectors, 2, Normalize)
-  dist <- abs (base.vector %*% random.vectors)
+  dist <- base.vector %*% random.vectors
   dz1 <- apply (cov.matrix.1 %*% random.vectors, 2, Normalize)
   dz2 <- apply (cov.matrix.2 %*% random.vectors, 2, Normalize)
-  real <- abs (apply (dz1 * dz2, 2, sum))
+  real <- apply (dz1 * dz2, 2, sum)
   ac <- mean (real)
   stdev <- sd (real)
   prob <- sum (real < dist) / nsk
