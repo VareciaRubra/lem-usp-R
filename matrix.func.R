@@ -182,7 +182,7 @@ RandomSkewers <- function (cov.matrix.1, cov.matrix.2, nsk = 10000)
   real <- apply (dz1 * dz2, 2, sum)
   ac <- mean (real)
   stdev <- sd (real)
-  prob <- sum (real < dist) / nsk
+  prob <- sum (ac < dist) / nsk
   output <- c(ac, prob, stdev)
   names(output) <- c("AC","P","SD")
   return(output)
