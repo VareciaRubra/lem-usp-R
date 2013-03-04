@@ -497,12 +497,12 @@ Pc1Percent             <- function (cov.matrix) return (eigen (cov.matrix)$value
 
 load.of.functions <- list (Norm,
                           Normalize,
-                          hansen.houle = list (Respondability,
-                                               Evolvability,
-                                               ConditionalEvolvability,
-                                               Autonomy,
-                                               Flexibility,
-                                               Constraints),
+                          hansen.houle = list ('resp' = Respondability,
+                                               'evol' = Evolvability,
+                                               'c.evol' = ConditionalEvolvability,
+                                               'auto' = Autonomy,
+                                               'flex' = Flexibility,
+                                               'constr' = Constraints),
                           MeanSquaredCorrelation,
                           Pc1Percent)
 
@@ -543,7 +543,8 @@ hh.mod <- function (mat, hip, nsk = 10000)
   with (load.of.functions,
         {
           out <- HansenHouleAverage (mat, nsk)
-          HansenHouleWrap2 <- function (hh.func) return (apply (hip, 2, hh.func, cov.matrix = mat))
+          HansenHouleWrap2 <- function (hh.func)
+            return (apply (hip, 2, hh.func, cov.matrix = mat))
           hip <- apply (hip, 2, Normalize)
           out$mod <- sapply (hansen.houle, HansenHouleWrap2)
           return (out)
@@ -664,7 +665,7 @@ ParallelRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers,
                                        iterations)
       return (comparing.now)
     }
-  corr.list = mclapply (1:nrow (index), singleComp)
+  corr.list = mclapply (1:nrow (index), singleComp, mc.cores = n.cores)
   for (k in 1:length (corr.list))
     {
       i <- index [k,1]
