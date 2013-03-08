@@ -240,10 +240,10 @@ SRD <- function (cov.matrix.1, cov.matrix.2, nsk = 1000)
     beta.matrix <- diag (beta[,I])
     dz1 <- apply (cov.matrix.1 %*% beta.matrix, 1, Normalize)
     dz2 <- apply (cov.matrix.2 %*% beta.matrix, 1, Normalize)
-    r2s[,I] <- colSums (dz1 * dz2)
+    r2s[,I] <- rowSums (dz1 * dz2)
   }
   # results
-  mean.r2 <- apply (r2s, 1, mean)
+  mean.r2 <- apply (r2s, 2, mean)
   sample.conf <- function (x, lower = TRUE){
     ox <- x[order(x)]
     lox <- length (ox)
@@ -253,9 +253,9 @@ SRD <- function (cov.matrix.1, cov.matrix.2, nsk = 1000)
       crit <- round (0.975 * lox)
     return (ox[crit])
   }
-  low.r2 <- apply (r2s, 1, sample.conf, lower = TRUE)
-  up.r2 <- apply (r2s, 1, sample.conf, lower = FALSE)
-  sd.r2 <- apply (r2s,1,sd)
+  low.r2 <- apply (r2s, 2, sample.conf, lower = TRUE)
+  up.r2 <- apply (r2s, 2, sample.conf, lower = FALSE)
+  sd.r2 <- apply (r2s,2,sd)
   cmean.r2 <- scale (mean.r2, scale = FALSE)
   csd.r2 <- scale (sd.r2, scale = FALSE)
   cent <- cbind (cmean.r2,csd.r2)
@@ -414,8 +414,8 @@ MonteCarloRep <- function (x.matrix, ind, nit = 100)
   # Calculates x.matrix repeatability using parametric sampling
   #
   # Args:
-  #     x.matrix: covariance or correlation matrix. 
-  #               if x.matrix is a correlation matrix will use MantelCor, 
+  #     x.matrix: covariance or correlation matrix.
+  #               if x.matrix is a correlation matrix will use MantelCor,
   #               else, will use RandomSkewers
   #     ind: number of indivuals on each sample
   #     nit: number of samples
