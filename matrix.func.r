@@ -327,8 +327,8 @@ PlotSRD <- function (output, matrix.label = "")
   axis (4, las = 2)
 }
 
-KzrCor <- function (cov.matrix.1, cov.matrix.2, ret.dim = NULL)
-  # Calculates the Kzranowski correlation between matrices
+KrzCor <- function (cov.matrix.1, cov.matrix.2, ret.dim = NULL)
+  # Calculates the Krzanowski correlation between matrices
   #
   # Args:
   #     cov.matrix.(1,2): covariance being compared
