@@ -29,13 +29,13 @@ TransferSize <- function (cov.matrix.1, cov.matrix.2)
   size.eigen.vector <- cov.matrix.1.svd$u[, 1]
   size.eigen.value <- cov.matrix.1.svd$d[1]
   size.factor <- size.eigen.vector * sqrt(size.eigen.value)
-  cov.matrix.2.size.transfer  <- RemoveSize(cov.matrix2)
+  cov.matrix.2.size.transfer  <- RemoveSize(cov.matrix.2)
   cov.matrix.2.size.transfer <- cov.matrix.2.size.transfer + size.factor %*% t(size.factor)
   cov.matrix.2.svd  <-  svd(cov.matrix.2)
   size.eigen.vector <- cov.matrix.2.svd$u[, 2]
   size.eigen.value <- cov.matrix.2.svd$d[2]
   size.factor <- size.eigen.vector * sqrt(size.eigen.value)
-  cov.matrix.1.size.transfer  <- RemoveSize(cov.matrix1)
+  cov.matrix.1.size.transfer  <- RemoveSize(cov.matrix.1)
   cov.matrix.1.size.transfer <- cov.matrix.1.size.transfer + size.factor %*% t(size.factor)
   return (list(cov.matrix.1.size.transfer, cov.matrix.2.size.transfer))
 }
