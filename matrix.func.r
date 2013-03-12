@@ -17,7 +17,7 @@ RemoveSize <- function (cov.matrix)
   return (cov.matrix.size.removed)
 }
 
-TransferSize <- function (cov.matrix1, cov.matrix2)
+TransferSize <- function (cov.matrix.1, cov.matrix.2)
   # Transfers the size variation between matrices
   #
   # Args:
