@@ -25,22 +25,20 @@ TransferSize <- function (cov.matrix.1, cov.matrix.2)
   # Return:
   #   A list with the matrices with the sizes swiched
 {
-  cov.matrix.1.svd  <-  svd(cov.matrix.1)
-  cov.matrix.2.svd  <-  svd(cov.matrix.2)
+  eigen.cov.matrix.1 = eigen(cov.matrix.1)
+  eVal.1 = eigen.cov.matrix.1$values
+  eVec.1 = eigen.cov.matrix.1$vectors
 
-  size.eigen.1.vector <- cov.matrix.1.svd$u[, 1]
-  size.eigen.1.value <- cov.matrix.1.svd$d[1]
-  size.eigen.2.vector <- cov.matrix.2.svd$u[, 2]
-  size.eigen.2.value <- cov.matrix.2.svd$d[2]
+  eigen.cov.matrix.2 = eigen(cov.matrix.2)
+  eVal.2 = eigen.cov.matrix.2$values
+  eVec.2 = eigen.cov.matrix.2$vectors
 
-  size.factor.1 <- size.eigen.1.vector * sqrt(size.eigen.2.value)
-  size.factor.2 <- size.eigen.2.vector * sqrt(size.eigen.1.value)
+  aux = eVal.1[1]
+  eVal.1[1] = eVal.2[1]
+  eVal.2[1] = aux
 
-  cov.matrix.1.size.transfer  <- RemoveSize(cov.matrix.1)
-  cov.matrix.2.size.transfer  <- RemoveSize(cov.matrix.2)
-
-  cov.matrix.1.size.transfer <- cov.matrix.1.size.transfer + size.factor.1 %*% t(size.factor.1)
-  cov.matrix.2.size.transfer <- cov.matrix.2.size.transfer + size.factor.2 %*% t(size.factor.2)
+  cov.matrix.1.size.transfer <- eVec.1%*%diag(eVal.1)%*%t(eVec.1)
+  cov.matrix.2.size.transfer <- eVec.2%*%diag(eVal.2)%*%t(eVec.2)
 
   return (list(cov.matrix.1.size.transfer, cov.matrix.2.size.transfer))
 }
