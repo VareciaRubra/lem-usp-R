@@ -228,6 +228,7 @@ MantelCor <- function (cor.matrix.1, cor.matrix.2, nit = 1000, mod = FALSE)
 {
   fixed.matrix <- cor.matrix.1 [lower.tri (cor.matrix.1)]
   shuffled.matrix <- cor.matrix.2 [lower.tri (cor.matrix.2)]
+  index <- shuffled.matrix
   correlation <- cor (fixed.matrix,shuffled.matrix)
   shuffled.correlation <- c()
   for (N in 1:nit){
@@ -237,8 +238,8 @@ MantelCor <- function (cor.matrix.1, cor.matrix.2, nit = 1000, mod = FALSE)
   }
   prob <- sum (shuffled.correlation > as.vector(correlation)) / nit
   if (mod == TRUE){
-    avg.plus <- mean (cor.matrix.1 [lower.tri(cor.matrix.1)] [mob != 0])
-    avg.minus <- mean (cor.matrix.1 [lower.tri(cor.matrix.1)] [mob == 0])
+    avg.plus <- mean (cor.matrix.1 [lower.tri(cor.matrix.1)] [index != 0])
+    avg.minus <- mean (cor.matrix.1 [lower.tri(cor.matrix.1)] [index == 0])
     avg.ratio <- avg.plus / avg.minus
     output <- c(correlation,prob,avg.plus,avg.minus,avg.ratio)
     names(output) <- c("R²","Probability","AVG+","AVG-","AVG Ratio")
