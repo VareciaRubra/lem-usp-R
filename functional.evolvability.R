@@ -51,3 +51,15 @@ JointModTest2 = function (cov.matrix, hips, n.randhip = 1000)
       p = sum (explained.random > explained.or) / n.randhip
       return (c(explained.or, p))
     }
+
+RandomHip = function (hip)
+  {
+    # input:
+    #  hip: set of MI hypothesis, coded as functional vectors
+    # returns:
+    #  random hypothesis with the same number of modules
+    out = NULL
+    out = t (apply (hip, 1, sample, replace = FALSE))
+    dimnames (out) = dimnames (hip)
+    return (out)
+  }
