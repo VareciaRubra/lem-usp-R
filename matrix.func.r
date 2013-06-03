@@ -278,7 +278,7 @@ SRD <- function (cov.matrix.1, cov.matrix.2, nsk = 1000)
     beta.matrix <- diag (beta[,I])
     dz1 <- apply (cov.matrix.1 %*% beta.matrix, 1, Normalize)
     dz2 <- apply (cov.matrix.2 %*% beta.matrix, 1, Normalize)
-    r2s[,I] <- rowSums (dz1 * dz2)
+    r2s[,I] <- colSums (dz1 * dz2)
   }
   # results
   mean.r2 <- apply (r2s, 1, mean)
