@@ -281,7 +281,7 @@ SRD <- function (cov.matrix.1, cov.matrix.2, nsk = 1000)
     r2s[,I] <- rowSums (dz1 * dz2)
   }
   # results
-  mean.r2 <- apply (r2s, 2, mean)
+  mean.r2 <- apply (r2s, 1, mean)
   sample.conf <- function (x, lower = TRUE){
     ox <- x[order(x)]
     lox <- length (ox)
@@ -291,9 +291,9 @@ SRD <- function (cov.matrix.1, cov.matrix.2, nsk = 1000)
       crit <- round (0.975 * lox)
     return (ox[crit])
   }
-  low.r2 <- apply (r2s, 2, sample.conf, lower = TRUE)
-  up.r2 <- apply (r2s, 2, sample.conf, lower = FALSE)
-  sd.r2 <- apply (r2s,2,sd)
+  low.r2 <- apply (r2s, 1, sample.conf, lower = TRUE)
+  up.r2 <- apply (r2s, 1, sample.conf, lower = FALSE)
+  sd.r2 <- apply (r2s,1,sd)
   cmean.r2 <- scale (mean.r2, scale = FALSE)
   csd.r2 <- scale (sd.r2, scale = FALSE)
   cent <- cbind (cmean.r2,csd.r2)
