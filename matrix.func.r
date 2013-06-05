@@ -72,7 +72,7 @@ MonteCarloR2 <- function (corr.matrix, sample.size, iterations = 1000)
   n.traits <- dim (corr.matrix) [1]
   populations <- list ()
   for (i in 1:iterations)
-    populations [[i]] <- rmvnorm2 (sample.size, sigma = corr.matrix, method = 'chol')
+    populations [[i]] <- rmvNorm2 (sample.size, sigma = corr.matrix, method = 'chol')
   it.matrices <- lapply (populations, cor)
   it.r2 <- sapply (it.matrices, R2)
   r2 <- c (R2 (corr.matrix), it.r2)
