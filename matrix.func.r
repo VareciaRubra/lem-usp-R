@@ -692,7 +692,7 @@ ParallelRsMantel <- function (matrix.list, MatrixCompFunc = RandomSkewers,
   rownames (correlations) <- matrix.names
   colnames (correlations) <- matrix.names
   probabilities <- correlations
-  index <- which (lower.tri (diag (n.matrix)), arr.ind = TRUE)
+  index <- which (upper.tri (diag (n.matrix)), arr.ind = TRUE)
   singleComp = function (k)
     {
       i <- index [k,1]
